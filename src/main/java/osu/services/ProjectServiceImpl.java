@@ -3,11 +3,12 @@ package osu.services;
 import osu.dto.ProjectDTO;
 import osu.enums.ProjectStatus;
 import osu.exception.RecordNotFoundException;
+import osu.mapper.EmployeeMapper;
+import osu.mapper.ProjectMapper;
 import osu.model.Employee;
 import osu.model.Project;
 import osu.repository.PositionRepository;
 import osu.repository.ProjectRepository;
-import osu.util.ProjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -20,17 +21,19 @@ import java.util.stream.Collectors;
 public class ProjectServiceImpl implements ProjectService {
 
     private final ProjectRepository projectRepository;
-    private final ProjectMapper projectMapper;
+    private final osu.mapper.ProjectMapper projectMapper;
+    private final EmployeeMapper employeeMapper;
 
     @Autowired
-    public ProjectServiceImpl(ProjectRepository projectRepository, PositionRepository positionRepository) {
+    public ProjectServiceImpl(ProjectRepository projectRepository, ProjectMapper projectMapper, EmployeeMapper employeeMapper) {
         this.projectRepository = projectRepository;
-        this.projectMapper = new ProjectMapper(positionRepository);
+        this.projectMapper = projectMapper;
+        this.employeeMapper = employeeMapper;
     }
 
     @Override
     public Project createProject(ProjectDTO projectDTO) {
-        Project project = projectMapper.mapToProject(projectDTO);
+        Project project = projectMapper.toEntity(projectDTO);
         return projectRepository.save(project);
     }
 
@@ -56,13 +59,13 @@ public class ProjectServiceImpl implements ProjectService {
     @Override
     public Optional<ProjectDTO> getProject(Long registrationNumber) {
         return projectRepository.findById(registrationNumber)
-                .map(projectMapper::mapToProjectResponse);
+                .map(projectMapper::toDto);
     }
 
     @Override
     public List<ProjectDTO> getAllProjects() {
         return projectRepository.findAll().stream()
-                .map(projectMapper::mapToProjectResponse)
+                .map(projectMapper::toDto)
                 .collect(Collectors.toList());
     }
 
@@ -77,7 +80,7 @@ public class ProjectServiceImpl implements ProjectService {
 
         Optional.ofNullable(projectDTO.getEmployees()).ifPresent(employeeDTOs -> {
             Set<Employee> employees = employeeDTOs.stream()
-                    .map(projectMapper::mapToEmployee)
+                    .map(employeeMapper::toEntity)
                     .collect(Collectors.toSet());
             project.setEmployees(employees);
             project.setEmployeeCount(employees.size());
