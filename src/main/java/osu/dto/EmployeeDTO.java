@@ -8,11 +8,11 @@ import java.util.Date;
 @Setter
 @ToString
 @RequiredArgsConstructor
-public class EmployeeRequest {
+public class EmployeeDTO {
     private Long personalNumber;
     private String firstName;
     private String lastName;
-    private String title;  // Enum mapping to AcademicTitle
+    private String title;
     private Date contractStart;
     private Date contractEnd;
     private Double workloadPercentage;
@@ -20,6 +20,6 @@ public class EmployeeRequest {
     private Double tariffAmount;
     private Double performanceBonus;
     private Double grossSalary;
-    private PositionRequest position;  // Position request DTO
+    private PositionDTO position;
 }
 

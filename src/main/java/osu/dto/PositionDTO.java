@@ -6,7 +6,7 @@ import lombok.*;
 @Setter
 @ToString
 @RequiredArgsConstructor
-public class PositionRequest {
+public class PositionDTO {
     private Long id;
     private String name;
 }

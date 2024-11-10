@@ -9,12 +9,13 @@ import java.util.Set;
 @Setter
 @ToString
 @RequiredArgsConstructor
-public class ProjectRequest {
+public class ProjectDTO {
     private Long registrationNumber;
     private String projectCode;
     private String projectName;
-    private String projectStatus;  // Enum mapping to ProjectStatus
+    private String projectStatus;
     private Date projectStart;
     private Date projectEnd;
-    private Set<EmployeeRequest> employees;  // Employee request DTO
+    private Integer employeeCount;
+    private Set<EmployeeDTO> employees;
 }

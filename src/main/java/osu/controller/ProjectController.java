@@ -1,6 +1,6 @@
 package osu.controller;
 
-import osu.dto.ProjectRequest;
+import osu.dto.ProjectDTO;
 import osu.exception.RecordNotFoundException;
 import osu.model.Project;
 import osu.services.ProjectService;
@@ -23,15 +23,15 @@ public class ProjectController {
     }
 
     @PostMapping
-    public ResponseEntity<Project> createProject(@RequestBody ProjectRequest projectRequest) {
-        Project project = projectService.createProject(projectRequest);
-        return new ResponseEntity<>(project, HttpStatus.CREATED);
+    public ResponseEntity<Project> createProject(@RequestBody ProjectDTO projectRequest) {
+        Project projectResponse = projectService.createProject(projectRequest);
+        return new ResponseEntity<>(projectResponse, HttpStatus.CREATED);
     }
 
     @PutMapping("/{registrationNumber}")
     public ResponseEntity<Project> updateProject(@PathVariable Long registrationNumber,
-                                                 @RequestBody Project projectDetails) {
-        Project updatedProject = projectService.updateProject(registrationNumber, projectDetails);
+                                                 @RequestBody ProjectDTO projectRequest) {
+        Project updatedProject = projectService.updateProject(registrationNumber, projectRequest);
         return new ResponseEntity<>(updatedProject, HttpStatus.OK);
     }
 
@@ -42,16 +42,16 @@ public class ProjectController {
     }
 
     @GetMapping("/{registrationNumber}")
-    public ResponseEntity<Project> getProject(@PathVariable Long registrationNumber) {
-        Project project = projectService.getProject(registrationNumber)
+    public ResponseEntity<ProjectDTO> getProject(@PathVariable Long registrationNumber) {
+        ProjectDTO projectResponse = projectService.getProject(registrationNumber)
                 .orElseThrow(() -> new RecordNotFoundException("Project with registration number "
                         + registrationNumber + " not found"));
-        return new ResponseEntity<>(project, HttpStatus.OK);
+        return new ResponseEntity<>(projectResponse, HttpStatus.OK);
     }
 
     @GetMapping
-    public ResponseEntity<List<Project>> getAllProjects() {
-        List<Project> projects = projectService.getAllProjects();
-        return new ResponseEntity<>(projects, HttpStatus.OK);
+    public ResponseEntity<List<ProjectDTO>> getAllProjects() {
+        List<ProjectDTO> projectResponses = projectService.getAllProjects();
+        return new ResponseEntity<>(projectResponses, HttpStatus.OK);
     }
 }
