@@ -5,7 +5,6 @@ import osu.enums.ProjectStatus;
 import osu.exception.RecordNotFoundException;
 import osu.model.Employee;
 import osu.model.Project;
-import osu.repository.EmployeeRepository;
 import osu.repository.PositionRepository;
 import osu.repository.ProjectRepository;
 import osu.util.ProjectMapper;
@@ -21,16 +20,11 @@ import java.util.stream.Collectors;
 public class ProjectServiceImpl implements ProjectService {
 
     private final ProjectRepository projectRepository;
-    private final EmployeeRepository employeeRepository;
-    private final PositionRepository positionRepository;
     private final ProjectMapper projectMapper;
 
     @Autowired
-    public ProjectServiceImpl(ProjectRepository projectRepository, EmployeeRepository employeeRepository,
-                              PositionRepository positionRepository) {
+    public ProjectServiceImpl(ProjectRepository projectRepository, PositionRepository positionRepository) {
         this.projectRepository = projectRepository;
-        this.employeeRepository = employeeRepository;
-        this.positionRepository = positionRepository;
         this.projectMapper = new ProjectMapper(positionRepository);
     }
 

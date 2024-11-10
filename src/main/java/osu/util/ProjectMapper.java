@@ -9,6 +9,7 @@ import osu.model.Employee;
 import osu.model.Position;
 import osu.model.Project;
 import osu.repository.PositionRepository;
+import osu.services.EmployeeServiceImpl;
 
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -63,13 +64,9 @@ public class ProjectMapper {
         employee.setFirstName(employeeDTO.getFirstName());
         employee.setLastName(employeeDTO.getLastName());
         employee.setTitle(AcademicTitle.valueOf(employeeDTO.getTitle()));
-        employee.setContractStart(employeeDTO.getContractStart());
-        employee.setContractEnd(employeeDTO.getContractEnd());
-        employee.setWorkloadPercentage(employeeDTO.getWorkloadPercentage());
-        employee.setSalaryGrade(employeeDTO.getSalaryGrade());
-        employee.setTariffAmount(employeeDTO.getTariffAmount());
-        employee.setPerformanceBonus(employeeDTO.getPerformanceBonus());
-        employee.setGrossSalary(employeeDTO.getGrossSalary());
+        EmployeeServiceImpl.updateEmployeeDetails(employee, employeeDTO.getContractStart(), employeeDTO.getContractEnd(),
+                employeeDTO.getWorkloadPercentage(), employeeDTO.getSalaryGrade(), employeeDTO.getTariffAmount(),
+                employeeDTO.getPerformanceBonus(), employeeDTO.getGrossSalary());
         employee.setPosition(employee.getPosition());
 
         Position position = positionRepository.findById(employeeDTO.getPosition().getId())
