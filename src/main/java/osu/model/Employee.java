@@ -43,6 +43,10 @@ public class Employee {
     @JsonBackReference
     private Set<Project> projects;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "created_by")
+    private User createdBy;
+
     @Override
     public final boolean equals(Object o) {
         if (this == o) return true;

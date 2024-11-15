@@ -3,6 +3,7 @@ package osu.dto;
 import lombok.*;
 
 import java.util.Date;
+import java.util.Set;
 
 @Getter
 @Setter
@@ -21,5 +22,7 @@ public class EmployeeDTO {
     private Double performanceBonus;
     private Double grossSalary;
     private PositionDTO position;
+    private UserDto createdBy;
+    private Set<ProjectDTO> projects;
 }
 

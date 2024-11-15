@@ -4,6 +4,8 @@ import jakarta.persistence.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.Set;
+
 @Entity
 @Data
 @NoArgsConstructor
@@ -17,6 +19,11 @@ public class User {
     private String username;
     private String passwordHash;
     private String role;
-
     private Boolean isActive;
+
+    @ManyToMany(mappedBy = "users")
+    private Set<Project> projects;
+
+    @OneToMany(mappedBy = "createdBy")
+    private Set<Employee> employees;
 }

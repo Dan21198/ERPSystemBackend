@@ -18,4 +18,5 @@ public class ProjectDTO {
     private Date projectEnd;
     private Integer employeeCount;
     private Set<EmployeeDTO> employees;
+    private Set<UserDto> users;
 }

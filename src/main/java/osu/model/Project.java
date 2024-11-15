@@ -42,6 +42,14 @@ public class Project {
     @JsonIgnore
     private Set<Employee> employees;
 
+    @ManyToMany(cascade = CascadeType.ALL)
+    @JoinTable(
+            name = "user_project",
+            joinColumns = @JoinColumn(name = "project_id"),
+            inverseJoinColumns = @JoinColumn(name = "user_id")
+    )
+    private Set<User> users;
+
     @Override
     public final boolean equals(Object o) {
         if (this == o) return true;

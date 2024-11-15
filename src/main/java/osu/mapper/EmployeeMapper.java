@@ -2,7 +2,6 @@ package osu.mapper;
 
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
-import org.mapstruct.Named;
 import osu.dto.EmployeeDTO;
 import osu.model.Employee;
 
