@@ -32,9 +32,18 @@ public class EmployeeServiceImpl implements EmployeeService {
     @Override
     public EmployeeDTO createEmployee(EmployeeDTO employeeDTO) {
         Employee employee = employeeMapper.toEntity(employeeDTO);
+
+        final Position position = employee.getPosition();
+        if (position != null && position.getId() != null) {
+            final Position foundPosition = positionRepository.findById(position.getId())
+                    .orElseThrow(() -> new RuntimeException("Position with ID " + position.getId() + " not found"));
+            employee.setPosition(foundPosition);
+        }
+
         Employee savedEmployee = employeeRepository.save(employee);
         return employeeMapper.toDto(savedEmployee);
     }
+
 
     @Override
     public EmployeeDTO getEmployee(Long personalNumber) {
