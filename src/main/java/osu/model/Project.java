@@ -33,7 +33,7 @@ public class Project {
     private Date projectEnd;
     private Integer employeeCount;
 
-    @ManyToMany(fetch = FetchType.EAGER, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
+    @ManyToMany(fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     @JoinTable(
             name = "project_employee",
             joinColumns = @JoinColumn(name = "project_id"),

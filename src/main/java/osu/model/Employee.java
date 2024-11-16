@@ -42,7 +42,7 @@ public class Employee {
     private Position position;
 
     @ManyToMany(mappedBy = "employees")
-    @JsonIgnore
+    @JsonManagedReference
     private Set<Project> projects;
 
     @ManyToOne(fetch = FetchType.LAZY)
