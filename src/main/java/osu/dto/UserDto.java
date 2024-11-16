@@ -6,9 +6,11 @@ import lombok.NoArgsConstructor;
 import java.util.Set;
 
 @Data
-@NoArgsConstructor
 public class UserDto {
-
+    private Long id;
     private String username;
-    private Set<ProjectDTO> projects;
+    private String email;
+    private String role;
+    private Boolean isActive;
+    private Set<Long> projectIds;
 }

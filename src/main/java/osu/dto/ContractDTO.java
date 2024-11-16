@@ -4,6 +4,7 @@ import lombok.Data;
 
 @Data
 public class ContractDTO {
+    private String orderNumber;
     private String type;
     private Double availableAmount;
     private String workplaceNumber;

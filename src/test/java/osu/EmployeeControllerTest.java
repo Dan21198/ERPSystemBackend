@@ -2,6 +2,8 @@ package osu;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.mockito.ArgumentMatchers;
+import org.springframework.context.annotation.Import;
+import osu.config.TestSecurityConfig;
 import osu.controller.EmployeeController;
 import osu.dto.EmployeeDTO;
 import osu.services.EmployeeService;
@@ -19,14 +21,14 @@ import java.util.Date;
 import java.util.List;
 
 import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.is;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
-import static org.hamcrest.Matchers.is;
-
 
 @WebMvcTest(EmployeeController.class)
+@Import(TestSecurityConfig.class)
 public class EmployeeControllerTest {
 
     @Autowired
@@ -58,7 +60,7 @@ public class EmployeeControllerTest {
 
     @Test
     void createEmployee_shouldReturnCreatedEmployee() throws Exception {
-        when(employeeService.createEmployee(ArgumentMatchers.any(EmployeeDTO.class))).thenReturn(employeeDTO);
+        when(employeeService.createEmployee(any(EmployeeDTO.class))).thenReturn(employeeDTO);
 
         mockMvc.perform(post("/api/v1/employees")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -68,7 +70,7 @@ public class EmployeeControllerTest {
                 .andExpect(jsonPath("$.firstName", is(employeeDTO.getFirstName())))
                 .andExpect(jsonPath("$.lastName", is(employeeDTO.getLastName())));
 
-        verify(employeeService, times(1)).createEmployee(ArgumentMatchers.any(EmployeeDTO.class));
+        verify(employeeService, times(1)).createEmployee(any(EmployeeDTO.class));
     }
 
     @Test
