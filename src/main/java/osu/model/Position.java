@@ -1,5 +1,6 @@
 package osu.model;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.*;
 import java.util.Set;
@@ -16,5 +17,6 @@ public class Position {
     private String name;
 
     @OneToMany(mappedBy = "position")
+    @JsonManagedReference
     private Set<Employee> employees;
 }

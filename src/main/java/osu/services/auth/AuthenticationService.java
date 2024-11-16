@@ -1,11 +1,11 @@
-package osu.services;
+package osu.services.auth;
 
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import osu.dto.LoginUserDto;
-import osu.dto.RegisterUserDto;
+import osu.dto.auth.LoginUserDto;
+import osu.dto.auth.RegisterUserDto;
 import osu.model.User;
 import osu.repository.UserRepository;
 

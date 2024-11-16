@@ -2,7 +2,7 @@ package osu.controller;
 
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import osu.dto.UserDto;
+import osu.dto.auth.UserDto;
 import osu.mapper.UserMapper;
 import osu.model.User;
 import osu.model.Project;
@@ -64,17 +64,13 @@ public class UserController {
         userDto.setEmail(currentUser.getEmail());
         userDto.setIsActive(currentUser.getIsActive());
 
-        userDto.setProjectIds(currentUser.getProjects().stream()
-                .map(Project::getRegistrationNumber)
-                .collect(Collectors.toSet()));
-
         return ResponseEntity.ok(userDto);
     }
 
     @GetMapping("/")
     public ResponseEntity<List<UserDto>> allUsers() {
         List<User> users = userService.allUsers();
-        List<UserDto> userDtos = userMapper.usersToUserDtos(users);  // Use MapStruct for conversion
+        List<UserDto> userDtos = userMapper.usersToUserDtos(users);
         return ResponseEntity.ok(userDtos);
     }
 }

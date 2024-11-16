@@ -1,6 +1,8 @@
 package osu.dto;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.*;
+import osu.dto.auth.UserDto;
 
 import java.util.Date;
 import java.util.Set;
@@ -23,6 +25,5 @@ public class EmployeeDTO {
     private Double grossSalary;
     private PositionDTO position;
     private UserDto createdBy;
-    private Set<ProjectDTO> projects;
 }
 

@@ -1,5 +1,7 @@
 package osu.model;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -16,7 +18,6 @@ import org.springframework.security.core.userdetails.UserDetails;
 @NoArgsConstructor
 @Table(name = "app_user")
 public class User implements UserDetails{
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -28,9 +29,12 @@ public class User implements UserDetails{
     private String role;
     private Boolean isActive;
 
-    @ManyToMany(mappedBy = "users", fetch = FetchType.EAGER)
+
+    @ManyToMany(mappedBy = "users", fetch = FetchType.LAZY)
+    @JsonIgnore
     private Set<Project> projects;
 
+    @JsonBackReference
     @OneToMany(mappedBy = "createdBy")
     private Set<Employee> employees;
 

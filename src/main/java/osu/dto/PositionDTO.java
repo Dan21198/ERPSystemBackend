@@ -11,5 +11,4 @@ import java.util.Set;
 public class PositionDTO {
     private Long id;
     private String name;
-    private Set<EmployeeDTO> employees;
 }

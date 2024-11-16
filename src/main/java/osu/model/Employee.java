@@ -1,6 +1,8 @@
 package osu.model;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.proxy.HibernateProxy;
@@ -34,17 +36,18 @@ public class Employee {
     private Double performanceBonus;
     private Double grossSalary;
 
-
-    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "position_id")
+    @JsonBackReference
     private Position position;
 
     @ManyToMany(mappedBy = "employees")
-    @JsonBackReference
+    @JsonIgnore
     private Set<Project> projects;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "created_by")
+    @JsonManagedReference
     private User createdBy;
 
     @Override

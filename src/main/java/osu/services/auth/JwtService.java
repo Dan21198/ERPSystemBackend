@@ -1,4 +1,4 @@
-package osu.services;
+package osu.services.auth;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;

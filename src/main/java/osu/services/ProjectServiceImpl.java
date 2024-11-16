@@ -7,7 +7,6 @@ import osu.mapper.EmployeeMapper;
 import osu.mapper.ProjectMapper;
 import osu.model.Employee;
 import osu.model.Project;
-import osu.repository.PositionRepository;
 import osu.repository.ProjectRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -25,7 +24,8 @@ public class ProjectServiceImpl implements ProjectService {
     private final EmployeeMapper employeeMapper;
 
     @Autowired
-    public ProjectServiceImpl(ProjectRepository projectRepository, ProjectMapper projectMapper, EmployeeMapper employeeMapper) {
+    public ProjectServiceImpl(ProjectRepository projectRepository, ProjectMapper projectMapper,
+                              EmployeeMapper employeeMapper) {
         this.projectRepository = projectRepository;
         this.projectMapper = projectMapper;
         this.employeeMapper = employeeMapper;

@@ -2,6 +2,7 @@ package osu.dto;
 
 
 import lombok.*;
+import osu.dto.auth.UserDto;
 import java.util.Date;
 import java.util.Set;
 

@@ -6,6 +6,8 @@ import osu.model.Project;
 
 @Mapper(componentModel = "spring")
 public interface ProjectMapper {
-    Project toEntity(ProjectDTO projectDTO);
+
     ProjectDTO toDto(Project project);
+
+    Project toEntity(ProjectDTO projectDTO);
 }

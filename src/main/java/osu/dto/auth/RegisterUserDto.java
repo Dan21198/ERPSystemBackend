@@ -1,4 +1,4 @@
-package osu.dto;
+package osu.dto.auth;
 
 import lombok.*;
 

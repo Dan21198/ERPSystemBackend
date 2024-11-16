@@ -7,9 +7,8 @@ import osu.model.Position;
 
 @Mapper(componentModel = "spring")
 public interface PositionMapper {
-    @Mapping(target = "employees", ignore = true)
-    Position toEntity(PositionDTO positionDTO);
 
-    @Mapping(target = "employees", ignore = true)
     PositionDTO toDto(Position position);
+
+    Position toEntity(PositionDTO positionDTO);
 }

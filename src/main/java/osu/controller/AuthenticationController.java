@@ -5,14 +5,12 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import osu.dto.LoginResponse;
-import osu.dto.LoginUserDto;
-import osu.dto.RegisterUserDto;
-import osu.dto.UserDto;
-import osu.mapper.UserMapper;
+import osu.dto.auth.LoginResponse;
+import osu.dto.auth.LoginUserDto;
+import osu.dto.auth.RegisterUserDto;
 import osu.model.User;
-import osu.services.AuthenticationService;
-import osu.services.JwtService;
+import osu.services.auth.AuthenticationService;
+import osu.services.auth.JwtService;
 
 @RequestMapping("/api/v1/auth")
 @RestController

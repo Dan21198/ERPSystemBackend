@@ -1,9 +1,7 @@
-package osu.dto;
+package osu.dto.auth;
 
 import lombok.Data;
-import lombok.NoArgsConstructor;
 
-import java.util.Set;
 
 @Data
 public class UserDto {
@@ -12,5 +10,4 @@ public class UserDto {
     private String email;
     private String role;
     private Boolean isActive;
-    private Set<Long> projectIds;
 }
