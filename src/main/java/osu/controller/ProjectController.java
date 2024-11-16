@@ -29,11 +29,14 @@ public class ProjectController {
     }
 
     @PutMapping("/{registrationNumber}")
-    public ResponseEntity<Project> updateProject(@PathVariable Long registrationNumber,
-                                                 @RequestBody ProjectDTO projectRequest) {
-        Project updatedProject = projectService.updateProject(registrationNumber, projectRequest);
-        return new ResponseEntity<>(updatedProject, HttpStatus.OK);
+    public ResponseEntity<ProjectDTO> updateProject(@PathVariable Long registrationNumber,
+                                                    @RequestBody ProjectDTO projectRequest) {
+        ProjectDTO updatedProjectDTO = projectService.updateProject(registrationNumber, projectRequest);
+
+        return new ResponseEntity<>(updatedProjectDTO, HttpStatus.OK);
     }
+
+
 
     @DeleteMapping("/{registrationNumber}")
     public ResponseEntity<Void> deleteProject(@PathVariable Long registrationNumber) {

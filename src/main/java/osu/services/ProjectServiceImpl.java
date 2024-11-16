@@ -1,5 +1,6 @@
 package osu.services;
 
+import jakarta.transaction.Transactional;
 import osu.dto.ProjectDTO;
 import osu.enums.ProjectStatus;
 import osu.exception.RecordNotFoundException;
@@ -38,13 +39,16 @@ public class ProjectServiceImpl implements ProjectService {
     }
 
     @Override
-    public Project updateProject(Long registrationNumber, ProjectDTO projectDTO) {
+    @Transactional
+    public ProjectDTO updateProject(Long registrationNumber, ProjectDTO projectDTO) {
         Project existingProject = projectRepository.findById(registrationNumber)
                 .orElseThrow(() -> new RecordNotFoundException("Project with registration number "
                         + registrationNumber + " not found"));
 
         updateProjectFromRequest(existingProject, projectDTO);
-        return projectRepository.save(existingProject);
+        Project updatedProject = projectRepository.save(existingProject);
+
+        return projectMapper.toDto(updatedProject);
     }
 
     @Override
@@ -79,11 +83,13 @@ public class ProjectServiceImpl implements ProjectService {
                 .ifPresent(project::setProjectStatus);
 
         Optional.ofNullable(projectDTO.getEmployees()).ifPresent(employeeDTOs -> {
-            Set<Employee> employees = employeeDTOs.stream()
+            Set<Employee> newEmployees = employeeDTOs.stream()
                     .map(employeeMapper::toEntity)
                     .collect(Collectors.toSet());
-            project.setEmployees(employees);
-            project.setEmployeeCount(employees.size());
+
+            project.getEmployees().addAll(newEmployees);
         });
+
+        project.setEmployeeCount(project.getEmployees().size());
     }
 }
