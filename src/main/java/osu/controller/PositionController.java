@@ -22,11 +22,12 @@ public class PositionController {
     }
 
     @PostMapping
-    public ResponseEntity<PositionDTO> createPosition(@RequestBody Position position) {
+    public ResponseEntity<PositionDTO> createPosition(@RequestBody PositionDTO positionDTO) {
+        Position position = new Position();
+        position.setName(positionDTO.getName());
         PositionDTO createdPosition = positionService.createPosition(position);
         return new ResponseEntity<>(createdPosition, HttpStatus.CREATED);
     }
-
     @GetMapping("/{id}")
     public ResponseEntity<PositionDTO> getPosition(@PathVariable Long id) {
         Optional<PositionDTO> position = positionService.getPosition(id);

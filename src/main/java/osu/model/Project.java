@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.*;
 import lombok.*;
 import org.hibernate.proxy.HibernateProxy;
 import osu.enums.ProjectStatus;
@@ -23,13 +24,21 @@ public class Project {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long registrationNumber;
 
+    @NotBlank(message = "Project code must not be blank")
+    @Size(max = 50, message = "Project code must not exceed 50 characters")
     private String projectCode;
+
+    @NotBlank(message = "Project name must not be blank")
+    @Size(max = 100, message = "Project name must not exceed 100 characters")
     private String projectName;
 
     @Enumerated(EnumType.STRING)
     private ProjectStatus projectStatus;
 
+    @NotNull(message = "Project start date must not be null")
     private Date projectStart;
+
+    @FutureOrPresent(message = "Project end date must be in the future or present")
     private Date projectEnd;
     private Integer employeeCount;
 

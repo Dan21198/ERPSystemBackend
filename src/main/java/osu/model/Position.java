@@ -1,7 +1,10 @@
 package osu.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 import lombok.*;
 import java.util.Set;
 
@@ -14,9 +17,11 @@ public class Position {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @NotBlank(message = "Position name must not be blank")
+    @Size(max = 50, message = "Position name must not exceed 50 characters")
     private String name;
 
     @OneToMany(mappedBy = "position")
-    @JsonManagedReference
+    @JsonIgnore
     private Set<Employee> employees;
 }

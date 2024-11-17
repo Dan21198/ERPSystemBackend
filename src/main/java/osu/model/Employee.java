@@ -1,12 +1,13 @@
 package osu.model;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.proxy.HibernateProxy;
 import osu.enums.AcademicTitle;
+import jakarta.persistence.*;
+import jakarta.validation.constraints.*;
 
 import java.util.Date;
 import java.util.Objects;
@@ -22,18 +23,43 @@ public class Employee {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long personalNumber;
 
+    @NotBlank(message = "First name must not be blank")
+    @Size(max = 50, message = "First name must not exceed 50 characters")
     private String firstName;
+
+    @NotBlank(message = "Last name must not be blank")
+    @Size(max = 50, message = "Last name must not exceed 50 characters")
     private String lastName;
 
     @Enumerated(EnumType.STRING)
     private AcademicTitle title;
 
+    @NotNull(message = "Contract start date must not be null")
+    @PastOrPresent(message = "Contract start date must be in the past or present")
     private Date contractStart;
+
+    @FutureOrPresent(message = "Contract end date must be in the future or present")
     private Date contractEnd;
+
+    @NotNull(message = "Workload percentage must not be null")
+    @DecimalMin(value = "0.0", message = "Workload percentage must be at least 0")
+    @DecimalMax(value = "100.0", message = "Workload percentage must not exceed 100")
     private Double workloadPercentage;
+
+    @NotBlank(message = "Salary grade must not be blank")
+    //@Pattern(regexp = "[A-Z][0-9]{1,3}", message = "Salary grade must follow the pattern (e.g., A1, B10)")
     private String salaryGrade;
+
+    @NotNull(message = "Tariff amount must not be null")
+    @PositiveOrZero(message = "Tariff amount must be zero or positive")
     private Double tariffAmount;
+
+    @NotNull(message = "Performance bonus must not be null")
+    @PositiveOrZero(message = "Performance bonus must be zero or positive")
     private Double performanceBonus;
+
+    @NotNull(message = "Gross salary must not be null")
+    @PositiveOrZero(message = "Gross salary must be zero or positive")
     private Double grossSalary;
 
     @ManyToOne(fetch = FetchType.EAGER)
