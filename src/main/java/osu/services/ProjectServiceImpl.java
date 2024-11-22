@@ -8,6 +8,7 @@ import osu.mapper.EmployeeMapper;
 import osu.mapper.ProjectMapper;
 import osu.model.Employee;
 import osu.model.Project;
+import osu.repository.EmployeeRepository;
 import osu.repository.ProjectRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -21,22 +22,39 @@ import java.util.stream.Collectors;
 public class ProjectServiceImpl implements ProjectService {
 
     private final ProjectRepository projectRepository;
+    private final EmployeeRepository employeeRepository;
     private final osu.mapper.ProjectMapper projectMapper;
     private final EmployeeMapper employeeMapper;
 
     @Autowired
-    public ProjectServiceImpl(ProjectRepository projectRepository, ProjectMapper projectMapper,
-                              EmployeeMapper employeeMapper) {
+    public ProjectServiceImpl(ProjectRepository projectRepository, EmployeeRepository employeeRepository,
+                              ProjectMapper projectMapper, EmployeeMapper employeeMapper) {
         this.projectRepository = projectRepository;
+        this.employeeRepository = employeeRepository;
         this.projectMapper = projectMapper;
         this.employeeMapper = employeeMapper;
     }
 
     @Override
-    public Project createProject(ProjectDTO projectDTO) {
+    public ProjectDTO createProject(ProjectDTO projectDTO) {
         Project project = projectMapper.toEntity(projectDTO);
-        return projectRepository.save(project);
+
+        if (projectDTO.getEmployees() != null && !projectDTO.getEmployees().isEmpty()) {
+            Set<Employee> employees = projectDTO.getEmployees().stream()
+                    .map(employeeDTO -> employeeRepository.findById(employeeDTO.getPersonalNumber())
+                            .orElseThrow(() -> new RecordNotFoundException("Employee with ID " +
+                                    employeeDTO.getPersonalNumber() + " not found")))
+                    .collect(Collectors.toSet());
+            project.setEmployees(employees);
+        }
+        project.setEmployeeCount(project.getEmployees() == null ? 0 : project.getEmployees().size());
+        Project savedProject = projectRepository.save(project);
+
+        return projectMapper.toDto(savedProject);
     }
+
+
+
 
     @Override
     @Transactional
