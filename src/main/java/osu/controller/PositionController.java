@@ -1,12 +1,12 @@
 package osu.controller;
 
 import osu.dto.PositionDTO;
-import osu.model.Position;
 import osu.services.PositionService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
 import java.util.List;
 import java.util.Optional;
 
@@ -23,11 +23,10 @@ public class PositionController {
 
     @PostMapping
     public ResponseEntity<PositionDTO> createPosition(@RequestBody PositionDTO positionDTO) {
-        Position position = new Position();
-        position.setName(positionDTO.getName());
-        PositionDTO createdPosition = positionService.createPosition(position);
+        PositionDTO createdPosition = positionService.createPosition(positionDTO);
         return new ResponseEntity<>(createdPosition, HttpStatus.CREATED);
     }
+
     @GetMapping("/{id}")
     public ResponseEntity<PositionDTO> getPosition(@PathVariable Long id) {
         Optional<PositionDTO> position = positionService.getPosition(id);
@@ -42,8 +41,8 @@ public class PositionController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<PositionDTO> updatePosition(@PathVariable Long id, @RequestBody Position position) {
-        PositionDTO updatedPosition = positionService.updatePosition(id, position);
+    public ResponseEntity<PositionDTO> updatePosition(@PathVariable Long id, @RequestBody PositionDTO positionDTO) {
+        PositionDTO updatedPosition = positionService.updatePosition(id, positionDTO);
         return updatedPosition != null
                 ? new ResponseEntity<>(updatedPosition, HttpStatus.OK)
                 : new ResponseEntity<>(HttpStatus.NOT_FOUND);

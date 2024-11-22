@@ -2,6 +2,7 @@ package osu.services;
 
 import osu.dto.PositionDTO;
 import osu.exception.RecordNotFoundException;
+import osu.mapper.PositionMapper;
 import osu.model.Position;
 import osu.repository.PositionRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,39 +15,43 @@ import java.util.stream.Collectors;
 public class PositionServiceImpl implements PositionService {
 
     private final PositionRepository positionRepository;
+    private final PositionMapper positionMapper;
 
     @Autowired
-    public PositionServiceImpl(PositionRepository positionRepository) {
+    public PositionServiceImpl(PositionRepository positionRepository, PositionMapper positionMapper) {
         this.positionRepository = positionRepository;
+        this.positionMapper = positionMapper;
     }
 
     @Override
-    public PositionDTO createPosition(Position position) {
+    public PositionDTO createPosition(PositionDTO positionDTO) {
+        Position position = positionMapper.toEntity(positionDTO);
         Position savedPosition = positionRepository.save(position);
-        return convertToDTO(savedPosition);
+        return positionMapper.toDto(savedPosition);
     }
 
     @Override
     public Optional<PositionDTO> getPosition(Long id) {
         Optional<Position> position = positionRepository.findById(id);
-        return position.map(this::convertToDTO);
+        return position.map(positionMapper::toDto);
     }
 
     @Override
     public List<PositionDTO> getAllPositions() {
         return positionRepository.findAll().stream()
-                .map(this::convertToDTO)
+                .map(positionMapper::toDto)
                 .collect(Collectors.toList());
     }
 
     @Override
-    public PositionDTO updatePosition(Long id, Position position) {
+    public PositionDTO updatePosition(Long id, PositionDTO positionDTO) {
         Position existingPosition = positionRepository.findById(id)
                 .orElseThrow(() -> new RecordNotFoundException("Position with ID " + id + " not found"));
 
-        existingPosition.setName(position.getName());
+        existingPosition.setName(positionDTO.getName());
+
         Position updatedPosition = positionRepository.save(existingPosition);
-        return convertToDTO(updatedPosition);
+        return positionMapper.toDto(updatedPosition);
     }
 
     @Override
@@ -56,11 +61,5 @@ public class PositionServiceImpl implements PositionService {
 
         positionRepository.delete(positionToDelete);
     }
-
-    private PositionDTO convertToDTO(Position position) {
-        PositionDTO positionDTO = new PositionDTO();
-        positionDTO.setId(position.getId());
-        positionDTO.setName(position.getName());
-        return positionDTO;
-    }
 }
+
