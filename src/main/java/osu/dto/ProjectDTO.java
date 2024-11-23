@@ -1,6 +1,7 @@
 package osu.dto;
 
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.*;
 import osu.dto.auth.UserDto;
 import java.util.Date;
@@ -11,7 +12,7 @@ import java.util.Set;
 @ToString
 @RequiredArgsConstructor
 public class ProjectDTO {
-    private Long registrationNumber;
+    private Long id;
     private String projectCode;
     private String projectName;
     private String projectStatus;

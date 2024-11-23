@@ -2,7 +2,6 @@ package osu.controller;
 
 import osu.dto.ProjectDTO;
 import osu.exception.RecordNotFoundException;
-import osu.model.Project;
 import osu.services.ProjectService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -29,27 +28,27 @@ public class ProjectController {
         return new ResponseEntity<>(projectResponse, HttpStatus.CREATED);
     }
 
-    @PutMapping("/{registrationNumber}")
-    public ResponseEntity<ProjectDTO> updateProject(@PathVariable Long registrationNumber,
+    @PutMapping("/{id}")
+    public ResponseEntity<ProjectDTO> updateProject(@PathVariable Long id,
                                                     @RequestBody ProjectDTO projectRequest) {
-        ProjectDTO updatedProjectDTO = projectService.updateProject(registrationNumber, projectRequest);
+        ProjectDTO updatedProjectDTO = projectService.updateProject(id, projectRequest);
 
         return new ResponseEntity<>(updatedProjectDTO, HttpStatus.OK);
     }
 
 
 
-    @DeleteMapping("/{registrationNumber}")
-    public ResponseEntity<Void> deleteProject(@PathVariable Long registrationNumber) {
-        projectService.deleteProject(registrationNumber);
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteProject(@PathVariable Long id) {
+        projectService.deleteProject(id);
         return ResponseEntity.noContent().build();
     }
 
-    @GetMapping("/{registrationNumber}")
-    public ResponseEntity<ProjectDTO> getProject(@PathVariable Long registrationNumber) {
-        ProjectDTO projectResponse = projectService.getProject(registrationNumber)
+    @GetMapping("/{id}")
+    public ResponseEntity<ProjectDTO> getProject(@PathVariable Long id) {
+        ProjectDTO projectResponse = projectService.getProject(id)
                 .orElseThrow(() -> new RecordNotFoundException("Project with registration number "
-                        + registrationNumber + " not found"));
+                        + id + " not found"));
         return new ResponseEntity<>(projectResponse, HttpStatus.OK);
     }
 

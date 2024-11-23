@@ -41,9 +41,9 @@ public class ProjectServiceImpl implements ProjectService {
 
         if (projectDTO.getEmployees() != null && !projectDTO.getEmployees().isEmpty()) {
             Set<Employee> employees = projectDTO.getEmployees().stream()
-                    .map(employeeDTO -> employeeRepository.findById(employeeDTO.getPersonalNumber())
+                    .map(employeeDTO -> employeeRepository.findById(employeeDTO.getId())
                             .orElseThrow(() -> new RecordNotFoundException("Employee with ID " +
-                                    employeeDTO.getPersonalNumber() + " not found")))
+                                    employeeDTO.getId() + " not found")))
                     .collect(Collectors.toSet());
             project.setEmployees(employees);
         }

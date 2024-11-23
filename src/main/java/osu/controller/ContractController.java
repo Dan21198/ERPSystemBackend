@@ -8,7 +8,6 @@ import org.springframework.web.bind.annotation.*;
 import osu.services.ContractService;
 
 import java.util.List;
-import java.util.Optional;
 
 @RestController
 @RequestMapping("/contracts")
@@ -27,9 +26,9 @@ public class ContractController {
         return new ResponseEntity<>(createdContract, HttpStatus.CREATED);
     }
 
-    @GetMapping("/{orderNumber}")
-    public ResponseEntity<Contract> getContract(@PathVariable Long orderNumber) {
-        Contract contract = contractService.getContract(orderNumber);
+    @GetMapping("/{id}")
+    public ResponseEntity<Contract> getContract(@PathVariable Long id) {
+        Contract contract = contractService.getContract(id);
         return new ResponseEntity<>(contract, HttpStatus.OK);
     }
 
@@ -39,15 +38,15 @@ public class ContractController {
         return new ResponseEntity<>(contracts, HttpStatus.OK);
     }
 
-    @PutMapping("/{orderNumber}")
-    public ResponseEntity<Contract> updateContract(@PathVariable Long orderNumber, @RequestBody Contract contract) {
-        Contract updatedContract = contractService.updateContract(orderNumber, contract);
+    @PutMapping("/{id}")
+    public ResponseEntity<Contract> updateContract(@PathVariable Long id, @RequestBody Contract contract) {
+        Contract updatedContract = contractService.updateContract(id, contract);
         return new ResponseEntity<>(updatedContract, HttpStatus.OK);
     }
 
-    @DeleteMapping("/{orderNumber}")
-    public ResponseEntity<Void> deleteContract(@PathVariable Long orderNumber) {
-        contractService.deleteContract(orderNumber);
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteContract(@PathVariable Long id) {
+        contractService.deleteContract(id);
         return ResponseEntity.noContent().build();
     }
 }

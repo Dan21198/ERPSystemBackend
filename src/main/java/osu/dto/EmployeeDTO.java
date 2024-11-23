@@ -12,7 +12,7 @@ import java.util.Set;
 @ToString
 @RequiredArgsConstructor
 public class EmployeeDTO {
-    private Long personalNumber;
+    private Long id;
     private String firstName;
     private String lastName;
     private String title;

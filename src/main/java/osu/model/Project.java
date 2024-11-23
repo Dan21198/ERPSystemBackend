@@ -1,7 +1,5 @@
 package osu.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
@@ -22,7 +20,7 @@ public class Project {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long registrationNumber;
+    private Long id;
 
     @NotBlank(message = "Project code must not be blank")
     @Size(max = 50, message = "Project code must not exceed 50 characters")
@@ -67,7 +65,7 @@ public class Project {
         Class<?> thisEffectiveClass = this instanceof HibernateProxy ? ((HibernateProxy) this).getHibernateLazyInitializer().getPersistentClass() : this.getClass();
         if (thisEffectiveClass != oEffectiveClass) return false;
         Project project = (Project) o;
-        return getRegistrationNumber() != null && Objects.equals(getRegistrationNumber(), project.getRegistrationNumber());
+        return getId() != null && Objects.equals(getId(), project.getId());
     }
 
     @Override

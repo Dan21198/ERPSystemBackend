@@ -6,7 +6,6 @@ import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.proxy.HibernateProxy;
 import osu.enums.AcademicTitle;
-import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 
 import java.util.Date;
@@ -21,7 +20,7 @@ import java.util.Set;
 public class Employee {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long personalNumber;
+    private Long id;
 
     @NotBlank(message = "First name must not be blank")
     @Size(max = 50, message = "First name must not exceed 50 characters")
@@ -47,7 +46,6 @@ public class Employee {
     private Double workloadPercentage;
 
     @NotBlank(message = "Salary grade must not be blank")
-    //@Pattern(regexp = "[A-Z][0-9]{1,3}", message = "Salary grade must follow the pattern (e.g., A1, B10)")
     private String salaryGrade;
 
     @NotNull(message = "Tariff amount must not be null")
@@ -84,7 +82,7 @@ public class Employee {
         Class<?> thisEffectiveClass = this instanceof HibernateProxy ? ((HibernateProxy) this).getHibernateLazyInitializer().getPersistentClass() : this.getClass();
         if (thisEffectiveClass != oEffectiveClass) return false;
         Employee employee = (Employee) o;
-        return getPersonalNumber() != null && Objects.equals(getPersonalNumber(), employee.getPersonalNumber());
+        return getId() != null && Objects.equals(getId(), employee.getId());
     }
 
     @Override

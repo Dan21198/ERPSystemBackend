@@ -32,7 +32,15 @@ public class SecurityConfiguration {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http.csrf(AbstractHttpConfigurer::disable)
+                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .authorizeHttpRequests(auth -> auth
+                        // Allow Swagger UI resources
+                        .requestMatchers(
+                                "/swagger-ui.html",
+                                "/swagger-ui/**",
+                                "/v3/api-docs*/**",
+                                "/webjars/**"
+                        ).permitAll()
                         .requestMatchers("/api/v1/auth/signup", "/api/v1/auth/login").permitAll()
                         .anyRequest().authenticated()
                 )
@@ -48,8 +56,7 @@ public class SecurityConfiguration {
     @Bean
     CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-
-        configuration.setAllowedOrigins(List.of("http://localhost:8005"));
+        configuration.setAllowedOrigins(List.of("http://localhost:8005", "http://localhost:3000"));
         configuration.setAllowedMethods(List.of("GET","POST"));
         configuration.setAllowedHeaders(List.of("Authorization","Content-Type"));
 

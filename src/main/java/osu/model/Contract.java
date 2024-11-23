@@ -18,7 +18,7 @@ public class Contract {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long orderNumber;
+    private Long id;
 
     private String type;
     private Double availableAmount;
@@ -34,7 +34,7 @@ public class Contract {
         Class<?> thisEffectiveClass = this instanceof HibernateProxy ? ((HibernateProxy) this).getHibernateLazyInitializer().getPersistentClass() : this.getClass();
         if (thisEffectiveClass != oEffectiveClass) return false;
         Contract contract = (Contract) o;
-        return getOrderNumber() != null && Objects.equals(getOrderNumber(), contract.getOrderNumber());
+        return getId() != null && Objects.equals(getId(), contract.getId());
     }
 
     @Override
