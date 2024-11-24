@@ -1,5 +1,6 @@
 package osu.controller;
 
+import io.swagger.v3.oas.annotations.Operation;
 import osu.dto.PositionDTO;
 import osu.services.PositionService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,12 +23,14 @@ public class PositionController {
     }
 
     @PostMapping
+    @Operation(summary = "Create a position", description = "Creates a new position")
     public ResponseEntity<PositionDTO> createPosition(@RequestBody PositionDTO positionDTO) {
         PositionDTO createdPosition = positionService.createPosition(positionDTO);
         return new ResponseEntity<>(createdPosition, HttpStatus.CREATED);
     }
 
     @GetMapping("/{id}")
+    @Operation(summary = "Get a position", description = "Retrieves a position by its ID")
     public ResponseEntity<PositionDTO> getPosition(@PathVariable Long id) {
         Optional<PositionDTO> position = positionService.getPosition(id);
         return position.map(value -> new ResponseEntity<>(value, HttpStatus.OK))
@@ -35,12 +38,14 @@ public class PositionController {
     }
 
     @GetMapping
+    @Operation(summary = "Get all positions", description = "Retrieves all positions")
     public ResponseEntity<List<PositionDTO>> getAllPositions() {
         List<PositionDTO> positions = positionService.getAllPositions();
         return new ResponseEntity<>(positions, HttpStatus.OK);
     }
 
     @PutMapping("/{id}")
+    @Operation(summary = "Update a position", description = "Updates an existing position by its ID")
     public ResponseEntity<PositionDTO> updatePosition(@PathVariable Long id, @RequestBody PositionDTO positionDTO) {
         PositionDTO updatedPosition = positionService.updatePosition(id, positionDTO);
         return updatedPosition != null
@@ -49,6 +54,7 @@ public class PositionController {
     }
 
     @DeleteMapping("/{id}")
+    @Operation(summary = "Delete a position", description = "Deletes a position by its ID")
     public ResponseEntity<Void> deletePosition(@PathVariable Long id) {
         positionService.deletePosition(id);
         return ResponseEntity.noContent().build();

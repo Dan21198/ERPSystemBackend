@@ -1,5 +1,6 @@
 package osu.controller;
 
+import io.swagger.v3.oas.annotations.Operation;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -24,6 +25,10 @@ public class AuthenticationController {
     }
 
     @PostMapping("/signup")
+    @Operation(
+            summary = "Register a new user",
+            description = "Registers a new user in the system with the provided details and returns the created user"
+    )
     public ResponseEntity<User> register(@RequestBody RegisterUserDto registerUserDto) {
         User registeredUser = authenticationService.signup(registerUserDto);
 
@@ -31,6 +36,10 @@ public class AuthenticationController {
     }
 
     @PostMapping("/login")
+    @Operation(
+            summary = "Authenticate a user",
+            description = "Authenticates a user with their credentials and returns a JWT token with an expiration time"
+    )
     public ResponseEntity<LoginResponse> authenticate(@RequestBody LoginUserDto loginUserDto) {
         User authenticatedUser = authenticationService.authenticate(loginUserDto);
 
@@ -43,5 +52,4 @@ public class AuthenticationController {
 
         return ResponseEntity.ok(loginResponse);
     }
-
 }
