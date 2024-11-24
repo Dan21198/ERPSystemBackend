@@ -1,7 +1,7 @@
 package osu.mapper;
 
 import org.mapstruct.Named;
-import osu.enums.AcademicTitle;
+import osu.employee.enums.AcademicTitle;
 
 public class CustomMappings {
 

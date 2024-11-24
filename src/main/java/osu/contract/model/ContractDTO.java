@@ -1,0 +1,13 @@
+package osu.contract.model;
+
+import lombok.Data;
+
+@Data
+public class ContractDTO {
+    private String id;
+    private String type;
+    private Double availableAmount;
+    private String workplaceNumber;
+    private String source;
+    private String duration;
+}
