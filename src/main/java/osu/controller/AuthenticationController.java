@@ -9,6 +9,8 @@ import org.springframework.web.bind.annotation.RestController;
 import osu.dto.auth.LoginResponse;
 import osu.dto.auth.LoginUserDto;
 import osu.dto.auth.RegisterUserDto;
+import osu.dto.auth.UserDto;
+import osu.mapper.UserMapper;
 import osu.model.User;
 import osu.services.auth.AuthenticationService;
 import osu.services.auth.JwtService;
@@ -18,10 +20,13 @@ import osu.services.auth.JwtService;
 public class AuthenticationController {
     private final JwtService jwtService;
     private final AuthenticationService authenticationService;
+    private final UserMapper userMapper;
 
-    public AuthenticationController(JwtService jwtService, AuthenticationService authenticationService) {
+    public AuthenticationController(JwtService jwtService, AuthenticationService authenticationService,
+                                    UserMapper userMapper) {
         this.jwtService = jwtService;
         this.authenticationService = authenticationService;
+        this.userMapper = userMapper;
     }
 
     @PostMapping("/signup")
@@ -29,10 +34,11 @@ public class AuthenticationController {
             summary = "Register a new user",
             description = "Registers a new user in the system with the provided details and returns the created user"
     )
-    public ResponseEntity<User> register(@RequestBody RegisterUserDto registerUserDto) {
+    public ResponseEntity<UserDto> register(@RequestBody RegisterUserDto registerUserDto) {
         User registeredUser = authenticationService.signup(registerUserDto);
+        UserDto registerResponse = userMapper.toDto(registeredUser);
 
-        return ResponseEntity.ok(registeredUser);
+        return ResponseEntity.ok(registerResponse);
     }
 
     @PostMapping("/login")

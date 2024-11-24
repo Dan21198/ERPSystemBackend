@@ -25,13 +25,6 @@ public class UserController {
         this.userMapper = userMapper;
     }
 
-    @PostMapping
-    @Operation(summary = "Create or update a user", description = "Creates a new user")
-    public ResponseEntity<User> createUser(@RequestBody User user) {
-        User savedUser = userService.saveUser(user);
-        return ResponseEntity.ok(savedUser);
-    }
-
     @GetMapping
     @Operation(summary = "Retrieve all users", description = "Gets a list of all users")
     public List<User> getAllUsers() {
@@ -75,10 +68,11 @@ public class UserController {
     }
 
     @GetMapping("/")
-    @Operation(summary = "Retrieve all users (DTO format)", description = "Gets a list of all users with limited details in DTO format")
+    @Operation(summary = "Retrieve all users (DTO format)",
+            description = "Gets a list of all users with limited details in DTO format")
     public ResponseEntity<List<UserDto>> allUsers() {
         List<User> users = userService.allUsers();
-        List<UserDto> userDtos = userMapper.usersToUserDtos(users);
+        List<UserDto> userDtos = userMapper.toDtos(users);
         return ResponseEntity.ok(userDtos);
     }
 }

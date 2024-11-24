@@ -86,4 +86,14 @@ public class User implements UserDetails{
         this.passwordHash = password;
         return this;
     }
+
+    public User setRole(String role) {
+        this.role = role;
+        return this;
+    }
+
+    public User setIsActive(Boolean isActive) {
+        this.isActive = isActive;
+        return this;
+    }
 }

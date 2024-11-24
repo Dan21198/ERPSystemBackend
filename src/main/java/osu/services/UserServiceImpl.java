@@ -1,6 +1,7 @@
 package osu.services;
 
 import org.springframework.beans.BeanUtils;
+import osu.dto.auth.UserDto;
 import osu.model.User;
 import osu.repository.UserRepository;
 import osu.exception.RecordNotFoundException;
@@ -17,11 +18,6 @@ public class UserServiceImpl implements UserService {
 
     public UserServiceImpl(UserRepository userRepository) {
         this.userRepository = userRepository;
-    }
-
-    @Override
-    public User saveUser(User user) {
-        return userRepository.save(user);
     }
 
     @Override
