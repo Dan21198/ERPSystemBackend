@@ -27,22 +27,28 @@ public class UserController {
 
     @GetMapping
     @Operation(summary = "Retrieve all users", description = "Gets a list of all users")
-    public List<User> getAllUsers() {
-        return userService.getAllUsers();
+    public ResponseEntity<List<UserDto>> getAllUsers() {
+        List<User> users = userService.getAllUsers();
+        List<UserDto> userDtos = users.stream()
+                .map(userMapper::toDto)
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(userDtos);
     }
 
     @GetMapping("/{id}")
     @Operation(summary = "Retrieve a user by ID", description = "Gets the details of a user by their ID")
-    public ResponseEntity<User> getUserById(@PathVariable Long id) {
+    public ResponseEntity<UserDto> getUserById(@PathVariable Long id) {
         User user = userService.getUserById(id);
-        return ResponseEntity.ok(user);
+        UserDto userDto = userMapper.toDto(user);
+        return ResponseEntity.ok(userDto);
     }
 
     @PutMapping("/{id}")
     @Operation(summary = "Update a user", description = "Updates the details of an existing user by their ID")
-    public ResponseEntity<User> updateUser(@PathVariable Long id, @RequestBody User userDetails) {
+    public ResponseEntity<UserDto> updateUser(@PathVariable Long id, @RequestBody User userDetails) {
         User updatedUser = userService.updateUser(id, userDetails);
-        return ResponseEntity.ok(updatedUser);
+        UserDto userDto = userMapper.toDto(updatedUser);
+        return ResponseEntity.ok(userDto);
     }
 
     @DeleteMapping("/{id}")
@@ -57,22 +63,8 @@ public class UserController {
     public ResponseEntity<UserDto> authenticatedUser() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         User currentUser = (User) authentication.getPrincipal();
-        UserDto userDto = new UserDto();
-
-        userDto.setId(currentUser.getId());
-        userDto.setUsername(currentUser.getUsername());
-        userDto.setEmail(currentUser.getEmail());
-        userDto.setIsActive(currentUser.getIsActive());
-
+        UserDto userDto = userMapper.toDto(currentUser);
         return ResponseEntity.ok(userDto);
     }
 
-    @GetMapping("/")
-    @Operation(summary = "Retrieve all users (DTO format)",
-            description = "Gets a list of all users with limited details in DTO format")
-    public ResponseEntity<List<UserDto>> allUsers() {
-        List<User> users = userService.allUsers();
-        List<UserDto> userDtos = userMapper.toDtos(users);
-        return ResponseEntity.ok(userDtos);
-    }
 }
