@@ -1,6 +1,8 @@
 package osu.project.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import osu.exception.RecordNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -8,6 +10,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import osu.project.service.ProjectService;
 import osu.project.model.ProjectDTO;
+import osu.user.model.User;
 
 import java.util.List;
 
@@ -23,14 +26,20 @@ public class ProjectController {
     }
 
     @PostMapping
-    @Operation(summary = "Create a project", description = "Creates a new project")
+    @Operation(summary = "Creates a project", description = "Creates a new project")
     public ResponseEntity<ProjectDTO> createProject(@RequestBody ProjectDTO projectRequest) {
-        ProjectDTO projectResponse = projectService.createProject(projectRequest);
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        User authenticatedUser = (User) authentication.getPrincipal();
+
+        ProjectDTO projectResponse = projectService.createProject(projectRequest, authenticatedUser);
+
         return new ResponseEntity<>(projectResponse, HttpStatus.CREATED);
     }
 
+
+
     @PutMapping("/{id}")
-    @Operation(summary = "Update a project", description = "Updates an existing project by ID")
+    @Operation(summary = "Updates a project", description = "Updates an existing project by ID")
     public ResponseEntity<ProjectDTO> updateProject(
             @PathVariable Long id,
             @RequestBody ProjectDTO projectRequest) {
@@ -39,14 +48,14 @@ public class ProjectController {
     }
 
     @DeleteMapping("/{id}")
-    @Operation(summary = "Delete a project", description = "Deletes a project by ID")
+    @Operation(summary = "Deletes a project", description = "Deletes a project by ID")
     public ResponseEntity<Void> deleteProject(@PathVariable Long id) {
         projectService.deleteProject(id);
         return ResponseEntity.noContent().build();
     }
 
     @GetMapping("/{id}")
-    @Operation(summary = "Get a project", description = "Retrieves a project by its ID")
+    @Operation(summary = "Gets a project", description = "Retrieves a project by its ID")
     public ResponseEntity<ProjectDTO> getProject(@PathVariable Long id) {
         ProjectDTO projectResponse = projectService.getProject(id)
                 .orElseThrow(() -> new RecordNotFoundException("Project with registration number "
@@ -55,7 +64,7 @@ public class ProjectController {
     }
 
     @GetMapping
-    @Operation(summary = "Get all projects", description = "Retrieves all projects")
+    @Operation(summary = "Gets all projects", description = "Retrieves all projects")
     public ResponseEntity<List<ProjectDTO>> getAllProjects() {
         List<ProjectDTO> projectResponses = projectService.getAllProjects();
         return new ResponseEntity<>(projectResponses, HttpStatus.OK);

@@ -1,6 +1,9 @@
 package osu.project.service;
 
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import jakarta.transaction.Transactional;
+import org.hibernate.Hibernate;
 import osu.exception.RecordNotFoundException;
 import osu.employee.mapper.EmployeeMapper;
 import osu.employee.model.Employee;
@@ -12,7 +15,9 @@ import osu.project.repository.ProjectRepository;
 import osu.employee.repository.EmployeeRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import osu.user.model.User;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -35,8 +40,12 @@ public class ProjectServiceImpl implements ProjectService {
         this.employeeMapper = employeeMapper;
     }
 
+    @PersistenceContext
+    private EntityManager entityManager;
+
     @Override
-    public ProjectDTO createProject(ProjectDTO projectDTO) {
+    @Transactional
+    public ProjectDTO createProject(ProjectDTO projectDTO, User authenticatedUser) {
         Project project = projectMapper.toEntity(projectDTO);
 
         if (projectDTO.getEmployees() != null && !projectDTO.getEmployees().isEmpty()) {
@@ -48,12 +57,18 @@ public class ProjectServiceImpl implements ProjectService {
             project.setEmployees(employees);
         }
         project.setEmployeeCount(project.getEmployees() == null ? 0 : project.getEmployees().size());
+
+        if (project.getUsers() == null) {
+            project.setUsers(new HashSet<>());
+        }
+
+        User managedUser = entityManager.merge(authenticatedUser);
+        project.getUsers().add(managedUser);
+
         Project savedProject = projectRepository.save(project);
 
         return projectMapper.toDto(savedProject);
     }
-
-
 
 
     @Override

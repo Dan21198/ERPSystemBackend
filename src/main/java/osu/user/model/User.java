@@ -37,7 +37,7 @@ public class User implements UserDetails{
     private Set<Project> projects;
 
     @JsonBackReference
-    @OneToMany(mappedBy = "createdBy")
+    @OneToMany(mappedBy = "createdBy", fetch = FetchType.LAZY)
     private Set<Employee> employees;
 
     @Override

@@ -26,7 +26,7 @@ public class UserController {
     }
 
     @GetMapping
-    @Operation(summary = "Retrieve all users", description = "Gets a list of all users")
+    @Operation(summary = "Retrieves all users", description = "Gets a list of all users")
     public ResponseEntity<List<UserDto>> getAllUsers() {
         List<User> users = userService.getAllUsers();
         List<UserDto> userDtos = users.stream()
@@ -36,7 +36,7 @@ public class UserController {
     }
 
     @GetMapping("/{id}")
-    @Operation(summary = "Retrieve a user by ID", description = "Gets the details of a user by their ID")
+    @Operation(summary = "Retrieves a user by ID", description = "Gets the details of a user by their ID")
     public ResponseEntity<UserDto> getUserById(@PathVariable Long id) {
         User user = userService.getUserById(id);
         UserDto userDto = userMapper.toDto(user);
@@ -44,7 +44,7 @@ public class UserController {
     }
 
     @PutMapping("/{id}")
-    @Operation(summary = "Update a user", description = "Updates the details of an existing user by their ID")
+    @Operation(summary = "Updates a user", description = "Updates the details of an existing user by their ID")
     public ResponseEntity<UserDto> updateUser(@PathVariable Long id, @RequestBody User userDetails) {
         User updatedUser = userService.updateUser(id, userDetails);
         UserDto userDto = userMapper.toDto(updatedUser);
@@ -52,14 +52,14 @@ public class UserController {
     }
 
     @DeleteMapping("/{id}")
-    @Operation(summary = "Delete a user", description = "Deletes a user by their ID")
+    @Operation(summary = "Deletes a user", description = "Deletes a user by their ID")
     public ResponseEntity<String> deleteUser(@PathVariable Long id) {
         userService.deleteUser(id);
         return ResponseEntity.ok("User deleted successfully.");
     }
 
     @GetMapping("/me")
-    @Operation(summary = "Get the authenticated user", description = "Retrieves details of the currently authenticated user")
+    @Operation(summary = "Gets the authenticated user", description = "Retrieves details of the currently authenticated user")
     public ResponseEntity<UserDto> authenticatedUser() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         User currentUser = (User) authentication.getPrincipal();

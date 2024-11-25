@@ -51,7 +51,7 @@ public class Project {
     @JsonManagedReference
     private Set<Employee> employees;
 
-    @ManyToMany(cascade = CascadeType.PERSIST)
+    @ManyToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     @JoinTable(
             name = "user_project",
             joinColumns = @JoinColumn(name = "project_id"),
