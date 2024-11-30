@@ -1,6 +1,7 @@
 package osu.employee.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -23,7 +24,7 @@ public class EmployeeController {
 
     @PostMapping
     @Operation(summary = "Creates an employee", description = "Creates a new employee and returns the created employee's details")
-    public ResponseEntity<EmployeeDTO> createEmployee(@RequestBody EmployeeDTO employeeDTO) {
+    public ResponseEntity<EmployeeDTO> createEmployee(@Valid @RequestBody EmployeeDTO employeeDTO) {
         EmployeeDTO createdEmployeeDTO = employeeService.createEmployee(employeeDTO);
         return new ResponseEntity<>(createdEmployeeDTO, HttpStatus.CREATED);
     }
@@ -45,7 +46,7 @@ public class EmployeeController {
     @PutMapping("/{id}")
     @Operation(summary = "Updates an employee", description = "Updates the details of an existing employee by their ID")
     public ResponseEntity<EmployeeDTO> updateEmployee(@PathVariable Long id,
-                                                      @RequestBody EmployeeDTO employeeDTO) {
+                                                      @Valid @RequestBody EmployeeDTO employeeDTO) {
         EmployeeDTO updatedEmployeeDTO = employeeService.updateEmployee(id, employeeDTO);
         return new ResponseEntity<>(updatedEmployeeDTO, HttpStatus.OK);
     }

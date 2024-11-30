@@ -1,9 +1,12 @@
 package osu.employee.model;
 
-import lombok.*;
+import jakarta.validation.constraints.*;
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
+import lombok.Setter;
+import lombok.ToString;
 import osu.position.model.PositionDTO;
 import osu.user.model.UserDto;
-
 import java.util.Date;
 
 @Getter
@@ -11,18 +14,44 @@ import java.util.Date;
 @ToString
 @RequiredArgsConstructor
 public class EmployeeDTO {
+
     private Long id;
+
+    @NotBlank(message = "First name cannot be blank")
+    @Size(max = 100, message = "First name must not exceed 100 characters")
     private String firstName;
+
+    @NotBlank(message = "Last name cannot be blank")
+    @Size(max = 100, message = "Last name must not exceed 100 characters")
     private String lastName;
+
+    @NotBlank(message = "Title cannot be blank")
     private String title;
+
+    @NotNull(message = "Contract start date is required")
     private Date contractStart;
+
+    @FutureOrPresent(message = "Contract end date must be in the future or today")
     private Date contractEnd;
+
+    @NotNull(message = "Workload percentage is required")
+    @DecimalMin(value = "0.0", message = "Workload percentage must be at least 0%")
+    @DecimalMax(value = "100.0", message = "Workload percentage cannot exceed 100%")
     private Double workloadPercentage;
+
+    @NotBlank(message = "Salary grade cannot be blank")
     private String salaryGrade;
+
+    @NotNull(message = "Tariff amount is required")
+    @Positive(message = "Tariff amount must be positive")
     private Double tariffAmount;
+
+    @PositiveOrZero(message = "Performance bonus must not be negative")
     private Double performanceBonus;
+
+    @Positive(message = "Gross salary must be positive")
     private Double grossSalary;
+
     private PositionDTO position;
     private UserDto createdBy;
 }
-

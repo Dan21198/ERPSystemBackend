@@ -1,6 +1,7 @@
 package osu.project.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
+import jakarta.validation.Valid;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import osu.exception.RecordNotFoundException;
@@ -11,7 +12,6 @@ import org.springframework.web.bind.annotation.*;
 import osu.project.service.ProjectService;
 import osu.project.model.ProjectDTO;
 import osu.user.model.User;
-
 import java.util.List;
 
 @RestController
@@ -27,7 +27,7 @@ public class ProjectController {
 
     @PostMapping
     @Operation(summary = "Creates a project", description = "Creates a new project")
-    public ResponseEntity<ProjectDTO> createProject(@RequestBody ProjectDTO projectRequest) {
+    public ResponseEntity<ProjectDTO> createProject(@Valid @RequestBody ProjectDTO projectRequest) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         User authenticatedUser = (User) authentication.getPrincipal();
 
@@ -36,13 +36,11 @@ public class ProjectController {
         return new ResponseEntity<>(projectResponse, HttpStatus.CREATED);
     }
 
-
-
     @PutMapping("/{id}")
     @Operation(summary = "Updates a project", description = "Updates an existing project by ID")
     public ResponseEntity<ProjectDTO> updateProject(
             @PathVariable Long id,
-            @RequestBody ProjectDTO projectRequest) {
+            @Valid @RequestBody ProjectDTO projectRequest) {
         ProjectDTO updatedProjectDTO = projectService.updateProject(id, projectRequest);
         return new ResponseEntity<>(updatedProjectDTO, HttpStatus.OK);
     }

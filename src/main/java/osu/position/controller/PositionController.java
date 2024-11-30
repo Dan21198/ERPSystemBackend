@@ -1,13 +1,13 @@
 package osu.position.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import osu.position.service.PositionService;
 import osu.position.model.PositionDTO;
-
 import java.util.List;
 import java.util.Optional;
 
@@ -24,7 +24,7 @@ public class PositionController {
 
     @PostMapping
     @Operation(summary = "Creates a position", description = "Creates a new position")
-    public ResponseEntity<PositionDTO> createPosition(@RequestBody PositionDTO positionDTO) {
+    public ResponseEntity<PositionDTO> createPosition(@Valid @RequestBody PositionDTO positionDTO) {
         PositionDTO createdPosition = positionService.createPosition(positionDTO);
         return new ResponseEntity<>(createdPosition, HttpStatus.CREATED);
     }
@@ -46,7 +46,8 @@ public class PositionController {
 
     @PutMapping("/{id}")
     @Operation(summary = "Updates a position", description = "Updates an existing position by its ID")
-    public ResponseEntity<PositionDTO> updatePosition(@PathVariable Long id, @RequestBody PositionDTO positionDTO) {
+    public ResponseEntity<PositionDTO> updatePosition(@PathVariable Long id,
+                                                      @Valid @RequestBody PositionDTO positionDTO) {
         PositionDTO updatedPosition = positionService.updatePosition(id, positionDTO);
         return updatedPosition != null
                 ? new ResponseEntity<>(updatedPosition, HttpStatus.OK)
