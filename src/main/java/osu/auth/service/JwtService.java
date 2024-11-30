@@ -1,27 +1,38 @@
 package osu.auth.service;
 
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.*;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.stereotype.Service;
+import osu.auth.model.JwtBlacklist;
+import osu.auth.repository.JwtBlacklistRepository;
+
 import java.security.Key;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.function.Function;
-
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.stereotype.Service;
 
 @Service
 public class JwtService {
+
     @Value("${security.jwt.secret-key}")
     private String secretKey;
 
     @Value("${security.jwt.expiration-time}")
     private long jwtExpiration;
+
+    @Value("${security.jwt.refresh-expiration-time}")
+    private long refreshExpirationTime;
+
+    private final JwtBlacklistRepository jwtBlacklistRepository;
+
+    public JwtService(JwtBlacklistRepository jwtBlacklistRepository) {
+        this.jwtBlacklistRepository = jwtBlacklistRepository;
+    }
 
     public String extractUsername(String token) {
         return extractClaim(token, Claims::getSubject);
@@ -40,15 +51,11 @@ public class JwtService {
         return buildToken(extraClaims, userDetails, jwtExpiration);
     }
 
-    public long getExpirationTime() {
-        return jwtExpiration;
+    public String generateRefreshToken(UserDetails userDetails) {
+        return buildToken(new HashMap<>(), userDetails, refreshExpirationTime);
     }
 
-    private String buildToken(
-            Map<String, Object> extraClaims,
-            UserDetails userDetails,
-            long expiration
-    ) {
+    private String buildToken(Map<String, Object> extraClaims, UserDetails userDetails, long expiration) {
         return Jwts
                 .builder()
                 .setClaims(extraClaims)
@@ -68,7 +75,7 @@ public class JwtService {
         return extractExpiration(token).before(new Date());
     }
 
-    private Date extractExpiration(String token) {
+    public Date extractExpiration(String token) {
         return extractClaim(token, Claims::getExpiration);
     }
 
@@ -84,5 +91,18 @@ public class JwtService {
     private Key getSignInKey() {
         byte[] keyBytes = Decoders.BASE64.decode(secretKey);
         return Keys.hmacShaKeyFor(keyBytes);
+    }
+
+    public boolean isRefreshTokenExpired(String token) {
+        return extractExpiration(token).before(new Date());
+    }
+
+    public long getExpirationTime() {
+        return jwtExpiration;
+    }
+
+    public boolean isTokenBlacklisted(String token) {
+        Optional<JwtBlacklist> blacklistedToken = jwtBlacklistRepository.findByToken(token);
+        return blacklistedToken.isPresent();
     }
 }

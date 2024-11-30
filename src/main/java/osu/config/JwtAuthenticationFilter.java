@@ -52,6 +52,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             final String jwt = authHeader.substring(7);
             final String userEmail = jwtService.extractUsername(jwt);
 
+            if (jwtService.isTokenBlacklisted(jwt)) {
+                response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+                return;
+            }
+
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
             if (userEmail != null && authentication == null) {
