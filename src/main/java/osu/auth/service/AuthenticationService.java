@@ -51,7 +51,7 @@ public class AuthenticationService {
 
     public LoginResponse refreshToken(String refreshToken) {
         if (jwtService.isRefreshTokenExpired(refreshToken)) {
-            return null;
+            throw new RuntimeException("Refresh token has expired");
         }
 
         String email = jwtService.extractUsername(refreshToken);

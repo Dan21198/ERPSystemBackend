@@ -57,6 +57,15 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 return;
             }
 
+            String tokenType = jwtService.extractTokenType(jwt);
+            if ("refresh".equals(tokenType)) {
+                if (!request.getRequestURI().equals("/api/v1/auth/refresh")) {
+                    response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+                    response.getWriter().write("Refresh token is not allowed for this endpoint");
+                    return;
+                }
+            }
+
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
             if (userEmail != null && authentication == null) {

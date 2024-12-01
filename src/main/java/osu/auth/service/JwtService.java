@@ -44,15 +44,15 @@ public class JwtService {
     }
 
     public String generateToken(UserDetails userDetails) {
-        return generateToken(new HashMap<>(), userDetails);
-    }
-
-    public String generateToken(Map<String, Object> extraClaims, UserDetails userDetails) {
-        return buildToken(extraClaims, userDetails, jwtExpiration);
+        Map<String, Object> claims = new HashMap<>();
+        claims.put("type", "access");
+        return buildToken(claims, userDetails, jwtExpiration);
     }
 
     public String generateRefreshToken(UserDetails userDetails) {
-        return buildToken(new HashMap<>(), userDetails, refreshExpirationTime);
+        Map<String, Object> claims = new HashMap<>();
+        claims.put("type", "refresh");
+        return buildToken(claims, userDetails, refreshExpirationTime);
     }
 
     private String buildToken(Map<String, Object> extraClaims, UserDetails userDetails, long expiration) {
@@ -71,8 +71,13 @@ public class JwtService {
         return (username.equals(userDetails.getUsername())) && !isTokenExpired(token);
     }
 
-    private boolean isTokenExpired(String token) {
-        return extractExpiration(token).before(new Date());
+    public boolean isTokenExpired(String token) {
+        try {
+            Date expiration = extractExpiration(token);
+            return expiration.before(new Date());
+        } catch (ExpiredJwtException e) {
+            return true;
+        }
     }
 
     public Date extractExpiration(String token) {
@@ -94,7 +99,30 @@ public class JwtService {
     }
 
     public boolean isRefreshTokenExpired(String token) {
-        return extractExpiration(token).before(new Date());
+        try {
+            Claims claims = extractAllClaims(token);
+            String type = claims.get("type", String.class);
+
+            return !"refresh".equals(type) || claims.getExpiration().before(new Date());
+        } catch (Exception e) {
+            return true;
+        }
+    }
+
+    public boolean isRefreshToken(String token) {
+        try {
+            Claims claims = extractAllClaims(token);
+            String type = claims.get("type", String.class);
+            Date expiration = claims.getExpiration();
+
+            return "refresh".equals(type) && expiration.after(new Date());
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    public String extractTokenType(String token) {
+        return extractClaim(token, claims -> claims.get("type", String.class));
     }
 
     public long getExpirationTime() {

@@ -15,6 +15,8 @@ import osu.user.mapper.UserMapper;
 import osu.user.model.User;
 import osu.user.model.UserDto;
 
+import java.util.Map;
+
 @RequestMapping("/api/v1/auth")
 @RestController
 public class AuthenticationController {
@@ -68,14 +70,19 @@ public class AuthenticationController {
             summary = "Refresh JWT token",
             description = "Refreshes the JWT token using a valid refresh token"
     )
-    public ResponseEntity<LoginResponse> refreshToken(@RequestHeader("Authorization") String authorizationHeader) {
-        String refreshToken = authorizationHeader.replace("Bearer ", "").trim();
+    public ResponseEntity<?> refreshToken(@RequestBody Map<String, String> payload) {
+        try {
+            String refreshToken = payload.get("refreshToken");
 
-        LoginResponse loginResponse = authenticationService.refreshToken(refreshToken);
-        if (loginResponse == null) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(null);
+            if (refreshToken == null || !jwtService.isRefreshToken(refreshToken)) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Invalid token type");
+            }
+
+            LoginResponse loginResponse = authenticationService.refreshToken(refreshToken);
+            return ResponseEntity.ok(loginResponse);
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(e.getMessage());
         }
-        return ResponseEntity.ok(loginResponse);
     }
 
     @PostMapping("/logout")
