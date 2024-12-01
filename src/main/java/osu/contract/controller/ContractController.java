@@ -11,7 +11,7 @@ import osu.contract.model.Contract;
 import java.util.List;
 
 @RestController
-@RequestMapping("/contracts")
+@RequestMapping("/api/v1/contracts")
 public class ContractController {
 
     private final ContractService contractService;
