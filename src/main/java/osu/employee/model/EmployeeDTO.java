@@ -25,8 +25,11 @@ public class EmployeeDTO {
     @Size(max = 100, message = "Last name must not exceed 100 characters")
     private String lastName;
 
-    @NotBlank(message = "Title cannot be blank")
-    private String title;
+    @Size(max = 100, message = "Title before name must not exceed 100 characters")
+    private String titleBeforeName;
+
+    @Size(max = 100, message = "Title after name must not exceed 100 characters")
+    private String titleAfterName;
 
     @NotNull(message = "Contract start date is required")
     private Date contractStart;

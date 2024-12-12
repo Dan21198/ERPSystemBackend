@@ -1,11 +1,13 @@
 package osu.employee.service;
 
-import osu.employee.enums.AcademicTitle;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import osu.employee.model.Employee;
 import osu.employee.model.EmployeeDTO;
 import osu.employee.repository.EmployeeRepository;
 import osu.exception.RecordNotFoundException;
 import osu.employee.mapper.EmployeeMapper;
+import osu.position.mapper.PositionMapper;
 import osu.position.model.Position;
 import osu.position.repository.PositionRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,13 +22,16 @@ public class EmployeeServiceImpl implements EmployeeService {
     private final EmployeeRepository employeeRepository;
     private final PositionRepository positionRepository;
     private final EmployeeMapper employeeMapper;
+    private final PositionMapper positionMapper;
+    private static final Logger logger = LoggerFactory.getLogger(EmployeeServiceImpl.class);
 
     @Autowired
     public EmployeeServiceImpl(EmployeeRepository employeeRepository, PositionRepository positionRepository,
-                               EmployeeMapper employeeMapper) {
+                               EmployeeMapper employeeMapper, PositionMapper positionMapper) {
         this.employeeRepository = employeeRepository;
         this.positionRepository = positionRepository;
         this.employeeMapper = employeeMapper;
+        this.positionMapper = positionMapper;
     }
 
     @Override
@@ -64,55 +69,27 @@ public class EmployeeServiceImpl implements EmployeeService {
     @Override
     public EmployeeDTO updateEmployee(Long personalNumber, EmployeeDTO employeeDTO) {
         Employee existingEmployee = employeeRepository.findById(personalNumber)
-                .orElseThrow(() -> new RecordNotFoundException("Employee with personal number "
-                        + personalNumber + " not found"));
+                .orElseThrow(() -> new RecordNotFoundException("Employee not found"));
 
-        updateEmployeeDetails(existingEmployee, employeeDTO);
+        try {
+            employeeMapper.updateEmployeeFromDto(employeeDTO, existingEmployee);
 
-        Employee updatedEmployee = employeeRepository.save(existingEmployee);
-        return employeeMapper.toDto(updatedEmployee);
+            if (employeeDTO.getPosition() != null) {
+                Position position = positionMapper.toEntity(employeeDTO.getPosition());
+                existingEmployee.setPosition(position);
+            }
+
+            Employee updatedEmployee = employeeRepository.save(existingEmployee);
+
+            return employeeMapper.toDto(updatedEmployee);
+        } catch (Exception e) {
+            logger.error("Unexpected error while updating employee", e);
+            throw new RuntimeException("Unexpected error updating employee", e);
+        }
     }
 
     @Override
     public void deleteEmployee(Long personalNumber) {
         employeeRepository.deleteById(personalNumber);
-    }
-
-    public void updateEmployeeDetails(Employee existingEmployee, EmployeeDTO employeeDTO) {
-        if (employeeDTO.getFirstName() != null) {
-            existingEmployee.setFirstName(employeeDTO.getFirstName());
-        }
-        if (employeeDTO.getLastName() != null) {
-            existingEmployee.setLastName(employeeDTO.getLastName());
-        }
-        if (employeeDTO.getTitle() != null) {
-            existingEmployee.setTitle(AcademicTitle.valueOf(employeeDTO.getTitle()));
-        }
-        if (employeeDTO.getContractStart() != null) {
-            existingEmployee.setContractStart(employeeDTO.getContractStart());
-        }
-        if (employeeDTO.getContractEnd() != null) {
-            existingEmployee.setContractEnd(employeeDTO.getContractEnd());
-        }
-        if (employeeDTO.getWorkloadPercentage() != null) {
-            existingEmployee.setWorkloadPercentage(employeeDTO.getWorkloadPercentage());
-        }
-        if (employeeDTO.getSalaryGrade() != null) {
-            existingEmployee.setSalaryGrade(employeeDTO.getSalaryGrade());
-        }
-        if (employeeDTO.getTariffAmount() != null) {
-            existingEmployee.setTariffAmount(employeeDTO.getTariffAmount());
-        }
-        if (employeeDTO.getPerformanceBonus() != null) {
-            existingEmployee.setPerformanceBonus(employeeDTO.getPerformanceBonus());
-        }
-        if (employeeDTO.getGrossSalary() != null) {
-            existingEmployee.setGrossSalary(employeeDTO.getGrossSalary());
-        }
-        if (employeeDTO.getPosition() != null && employeeDTO.getPosition().getId() != null) {
-            Position position = positionRepository.findById(employeeDTO.getPosition().getId())
-                    .orElseThrow(() -> new RuntimeException("Position not found"));
-            existingEmployee.setPosition(position);
-        }
     }
 }

@@ -6,7 +6,6 @@ import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.proxy.HibernateProxy;
 import jakarta.validation.constraints.*;
-import osu.employee.enums.AcademicTitle;
 import osu.position.model.Position;
 import osu.user.model.User;
 import osu.project.model.Project;
@@ -33,8 +32,11 @@ public class Employee {
     @Size(max = 50, message = "Last name must not exceed 50 characters")
     private String lastName;
 
-    @Enumerated(EnumType.STRING)
-    private AcademicTitle title;
+    @Size(max = 100, message = "Title before name must not exceed 100 characters")
+    private String titleBeforeName;
+
+    @Size(max = 100, message = "Title after name must not exceed 100 characters")
+    private String titleAfterName;
 
     @NotNull(message = "Contract start date must not be null")
     @PastOrPresent(message = "Contract start date must be in the past or present")

@@ -2,15 +2,17 @@ package osu.employee.mapper;
 
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
+import org.mapstruct.MappingTarget;
+import org.mapstruct.NullValuePropertyMappingStrategy;
 import osu.employee.model.EmployeeDTO;
 import osu.employee.model.Employee;
-import osu.mapper.CustomMappings;
 
-@Mapper(componentModel = "spring", uses = CustomMappings.class)
+@Mapper(componentModel = "spring", nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
 public interface EmployeeMapper {
-    @Mapping(target = "title", source = "title", qualifiedByName = "mapTitle")
     Employee toEntity(EmployeeDTO employeeDTO);
 
-    @Mapping(target = "title", source = "title", qualifiedByName = "mapTitle")
     EmployeeDTO toDto(Employee employee);
+
+    @Mapping(target = "id", ignore = true)
+    void updateEmployeeFromDto(EmployeeDTO employeeDTO, @MappingTarget Employee employee);
 }
