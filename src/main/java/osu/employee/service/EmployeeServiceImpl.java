@@ -92,4 +92,22 @@ public class EmployeeServiceImpl implements EmployeeService {
     public void deleteEmployee(Long personalNumber) {
         employeeRepository.deleteById(personalNumber);
     }
+
+    @Override
+    public List<EmployeeDTO> findEmployeesByName(String firstName, String lastName) {
+        if (firstName == null && lastName == null) {
+            throw new IllegalArgumentException("At least one of firstName or lastName must be provided.");
+        }
+
+        List<Employee> employees = Optional.ofNullable(firstName)
+                .flatMap(fn -> Optional.ofNullable(lastName)
+                        .map(ln -> employeeRepository.
+                                findByFirstNameIgnoreCaseContainingAndLastNameIgnoreCaseContaining(fn, ln))
+                        .or(() -> Optional.of(employeeRepository.findByFirstNameIgnoreCaseContaining(fn))))
+                .orElseGet(() -> employeeRepository.findByLastNameIgnoreCaseContaining(lastName));
+
+        return employees.stream()
+                .map(employeeMapper::toDto)
+                .collect(Collectors.toList());
+    }
 }

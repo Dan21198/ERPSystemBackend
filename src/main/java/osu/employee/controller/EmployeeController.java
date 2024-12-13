@@ -57,4 +57,13 @@ public class EmployeeController {
         employeeService.deleteEmployee(id);
         return ResponseEntity.noContent().build();
     }
+
+    @GetMapping("/name-search")
+    @Operation(summary = "Find employees by name", description = "Retrieves employees by their first and/or last name")
+    public ResponseEntity<List<EmployeeDTO>> findEmployeesByName(
+            @RequestParam(required = false) String firstName,
+            @RequestParam(required = false) String lastName) {
+        List<EmployeeDTO> employees = employeeService.findEmployeesByName(firstName, lastName);
+        return ResponseEntity.ok(employees);
+    }
 }
