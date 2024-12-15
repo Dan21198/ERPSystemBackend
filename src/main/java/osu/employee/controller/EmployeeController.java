@@ -73,4 +73,13 @@ public class EmployeeController {
         List<EmployeeDTO> employees = employeeService.findEmployeesByPositionName(positionName);
         return ResponseEntity.ok(employees);
     }
+
+    @GetMapping("/by-salary")
+    @Operation(summary = "Get employees sorted by gross salary",
+            description = "Retrieves employees sorted by gross salary in ascending or descending order")
+    public ResponseEntity<List<EmployeeDTO>> getEmployeesSortedBySalary(
+            @RequestParam(defaultValue = "asc") String order) {
+        List<EmployeeDTO> sortedEmployees = employeeService.getEmployeesSortedBySalary(order);
+        return ResponseEntity.ok(sortedEmployees);
+    }
 }

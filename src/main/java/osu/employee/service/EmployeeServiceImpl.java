@@ -119,4 +119,16 @@ public class EmployeeServiceImpl implements EmployeeService {
                 .collect(Collectors.toList());
     }
 
+    @Override
+    public List<EmployeeDTO> getEmployeesSortedBySalary(String order) {
+        List<Employee> employees;
+        if ("desc".equalsIgnoreCase(order)) {
+            employees = employeeRepository.findAllByOrderByGrossSalaryDesc();
+        } else {
+            employees = employeeRepository.findAllByOrderByGrossSalaryAsc();
+        }
+        return employees.stream()
+                .map(employeeMapper::toDto)
+                .collect(Collectors.toList());
+    }
 }

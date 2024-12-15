@@ -17,4 +17,7 @@ public interface EmployeeRepository extends JpaRepository<Employee, Long> {
 
     List<Employee> findByPosition_NameIgnoreCase(String positionName);
 
+    List<Employee> findAllByOrderByGrossSalaryAsc();
+
+    List<Employee> findAllByOrderByGrossSalaryDesc();
 }

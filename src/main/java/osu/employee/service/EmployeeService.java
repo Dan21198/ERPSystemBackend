@@ -19,4 +19,6 @@ public interface EmployeeService {
     List<EmployeeDTO> findEmployeesByName(String firstName, String lastName);
 
     List<EmployeeDTO> findEmployeesByPositionName(String positionName);
+
+    List<EmployeeDTO> getEmployeesSortedBySalary(String order);
 }
