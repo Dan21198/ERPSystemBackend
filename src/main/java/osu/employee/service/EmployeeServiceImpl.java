@@ -110,4 +110,13 @@ public class EmployeeServiceImpl implements EmployeeService {
                 .map(employeeMapper::toDto)
                 .collect(Collectors.toList());
     }
+
+    @Override
+    public List<EmployeeDTO> findEmployeesByPositionName(String positionName) {
+        List<Employee> employees = employeeRepository.findByPosition_NameIgnoreCase(positionName);
+        return employees.stream()
+                .map(employeeMapper::toDto)
+                .collect(Collectors.toList());
+    }
+
 }

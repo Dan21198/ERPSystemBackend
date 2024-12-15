@@ -17,4 +17,6 @@ public interface EmployeeService {
     void deleteEmployee(Long personalNumber);
 
     List<EmployeeDTO> findEmployeesByName(String firstName, String lastName);
+
+    List<EmployeeDTO> findEmployeesByPositionName(String positionName);
 }
