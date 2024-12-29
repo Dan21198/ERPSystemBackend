@@ -40,7 +40,7 @@ public class ProjectController {
     @Operation(summary = "Updates a project", description = "Updates an existing project by ID")
     public ResponseEntity<ProjectDTO> updateProject(
             @PathVariable Long id,
-            @Valid @RequestBody ProjectDTO projectRequest) {
+            @RequestBody ProjectDTO projectRequest) {
         ProjectDTO updatedProjectDTO = projectService.updateProject(id, projectRequest);
         return new ResponseEntity<>(updatedProjectDTO, HttpStatus.OK);
     }

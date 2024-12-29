@@ -3,11 +3,10 @@ package osu.project.service;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import jakarta.transaction.Transactional;
-import org.hibernate.Hibernate;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import osu.exception.RecordNotFoundException;
-import osu.employee.mapper.EmployeeMapper;
 import osu.employee.model.Employee;
-import osu.project.enums.ProjectStatus;
 import osu.project.mapper.ProjectMapper;
 import osu.project.model.Project;
 import osu.project.model.ProjectDTO;
@@ -29,15 +28,14 @@ public class ProjectServiceImpl implements ProjectService {
     private final ProjectRepository projectRepository;
     private final EmployeeRepository employeeRepository;
     private final ProjectMapper projectMapper;
-    private final EmployeeMapper employeeMapper;
+    private static final Logger logger = LoggerFactory.getLogger(ProjectServiceImpl.class);
 
     @Autowired
     public ProjectServiceImpl(ProjectRepository projectRepository, EmployeeRepository employeeRepository,
-                              ProjectMapper projectMapper, EmployeeMapper employeeMapper) {
+                              ProjectMapper projectMapper) {
         this.projectRepository = projectRepository;
         this.employeeRepository = employeeRepository;
         this.projectMapper = projectMapper;
-        this.employeeMapper = employeeMapper;
     }
 
     @PersistenceContext
@@ -48,14 +46,7 @@ public class ProjectServiceImpl implements ProjectService {
     public ProjectDTO createProject(ProjectDTO projectDTO, User authenticatedUser) {
         Project project = projectMapper.toEntity(projectDTO);
 
-        if (projectDTO.getEmployees() != null && !projectDTO.getEmployees().isEmpty()) {
-            Set<Employee> employees = projectDTO.getEmployees().stream()
-                    .map(employeeDTO -> employeeRepository.findById(employeeDTO.getId())
-                            .orElseThrow(() -> new RecordNotFoundException("Employee with ID " +
-                                    employeeDTO.getId() + " not found")))
-                    .collect(Collectors.toSet());
-            project.setEmployees(employees);
-        }
+        fetchAndSetEmployees(projectDTO, project);
         project.setEmployeeCount(project.getEmployees() == null ? 0 : project.getEmployees().size());
 
         if (project.getUsers() == null) {
@@ -72,16 +63,29 @@ public class ProjectServiceImpl implements ProjectService {
 
 
     @Override
-    @Transactional
     public ProjectDTO updateProject(Long registrationNumber, ProjectDTO projectDTO) {
         Project existingProject = projectRepository.findById(registrationNumber)
-                .orElseThrow(() -> new RecordNotFoundException("Project with registration number "
-                        + registrationNumber + " not found"));
+                .orElseThrow(() -> new RecordNotFoundException(
+                        "Project with registration number " + registrationNumber + " not found"));
 
-        updateProjectFromRequest(existingProject, projectDTO);
-        Project updatedProject = projectRepository.save(existingProject);
+        try {
+            projectMapper.updateProjectFromDto(projectDTO, existingProject);
 
-        return projectMapper.toDto(updatedProject);
+            fetchAndSetEmployees(projectDTO, existingProject);
+
+            existingProject.setEmployeeCount(
+                    Optional.ofNullable(existingProject.getEmployees())
+                            .map(Set::size)
+                            .orElse(0)
+            );
+
+            Project updatedProject = projectRepository.save(existingProject);
+
+            return projectMapper.toDto(updatedProject);
+        } catch (Exception e) {
+            logger.error("Unexpected error while updating project", e);
+            throw new RuntimeException("Unexpected error updating project", e);
+        }
     }
 
     @Override
@@ -106,23 +110,14 @@ public class ProjectServiceImpl implements ProjectService {
                 .collect(Collectors.toList());
     }
 
-    private void updateProjectFromRequest(Project project, ProjectDTO projectDTO) {
-        Optional.ofNullable(projectDTO.getProjectEnd()).ifPresent(project::setProjectEnd);
-        Optional.ofNullable(projectDTO.getProjectName()).ifPresent(project::setProjectName);
-        Optional.ofNullable(projectDTO.getProjectCode()).ifPresent(project::setProjectCode);
-
-        Optional.ofNullable(projectDTO.getProjectStatus())
-                .map(ProjectStatus::valueOf)
-                .ifPresent(project::setProjectStatus);
-
-        Optional.ofNullable(projectDTO.getEmployees()).ifPresent(employeeDTOs -> {
-            Set<Employee> newEmployees = employeeDTOs.stream()
-                    .map(employeeMapper::toEntity)
+    private void fetchAndSetEmployees(ProjectDTO projectDTO, Project existingProject) {
+        if (projectDTO.getEmployees() != null && !projectDTO.getEmployees().isEmpty()) {
+            Set<Employee> newEmployees = projectDTO.getEmployees().stream()
+                    .map(employeeDTO -> employeeRepository.findById(employeeDTO.getId())
+                            .orElseThrow(() -> new RecordNotFoundException(
+                                    "Employee with ID " + employeeDTO.getId() + " not found")))
                     .collect(Collectors.toSet());
-
-            project.getEmployees().addAll(newEmployees);
-        });
-
-        project.setEmployeeCount(project.getEmployees().size());
+            existingProject.setEmployees(newEmployees);
+        }
     }
 }
