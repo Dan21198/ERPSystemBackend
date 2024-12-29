@@ -1,12 +1,13 @@
 package osu.employee.service;
 
 import osu.employee.model.EmployeeDTO;
+import osu.user.model.User;
 
 import java.util.List;
 
 public interface EmployeeService {
 
-    EmployeeDTO createEmployee(EmployeeDTO employeeDTO);
+    EmployeeDTO createEmployee(EmployeeDTO employeeDTO, User authenticatedUser);
 
     EmployeeDTO getEmployee(Long personalNumber);
 

@@ -1,5 +1,6 @@
 package osu.employee.service;
 
+import jakarta.transaction.Transactional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import osu.employee.model.Employee;
@@ -12,6 +13,7 @@ import osu.position.model.Position;
 import osu.position.repository.PositionRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import osu.user.model.User;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -35,15 +37,18 @@ public class EmployeeServiceImpl implements EmployeeService {
     }
 
     @Override
-    public EmployeeDTO createEmployee(EmployeeDTO employeeDTO) {
+    @Transactional
+    public EmployeeDTO createEmployee(EmployeeDTO employeeDTO, User authenticatedUser) {
         Employee employee = employeeMapper.toEntity(employeeDTO);
 
-        final Position position = employee.getPosition();
-        if (position != null && position.getId() != null) {
-            final Position foundPosition = positionRepository.findById(position.getId())
-                    .orElseThrow(() -> new RuntimeException("Position with ID " + position.getId() + " not found"));
-            employee.setPosition(foundPosition);
+        if (employee.getPosition() != null && employee.getPosition().getId() != null) {
+            Position position = positionRepository.findById(employee.getPosition().getId())
+                    .orElseThrow(() -> new RuntimeException("Position with ID " + employee.getPosition().getId()
+                            + " not found"));
+            employee.setPosition(position);
         }
+
+        employee.setCreatedBy(authenticatedUser);
 
         Employee savedEmployee = employeeRepository.save(employee);
         return employeeMapper.toDto(savedEmployee);
