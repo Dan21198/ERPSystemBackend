@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import osu.project.enums.ProjectStatus;
 import osu.project.service.ProjectService;
 import osu.project.model.ProjectDTO;
 import osu.user.model.User;
@@ -67,4 +68,55 @@ public class ProjectController {
         List<ProjectDTO> projectResponses = projectService.getAllProjects();
         return new ResponseEntity<>(projectResponses, HttpStatus.OK);
     }
+
+    @GetMapping("/code/{projectCode}")
+    @Operation(summary = "Gets projects by project code", description = "Retrieves projects by project code")
+    public ResponseEntity<List<ProjectDTO>> getProjectsByProjectCode(@PathVariable String projectCode) {
+        List<ProjectDTO> projects = projectService.getProjectsByProjectCode(projectCode);
+        return ResponseEntity.ok(projects);
+    }
+
+    @GetMapping("/name/{projectName}")
+    @Operation(summary = "Gets projects by name", description = "Retrieves projects containing a given name")
+    public ResponseEntity<List<ProjectDTO>> getProjectsByProjectName(@PathVariable String projectName) {
+        List<ProjectDTO> projects = projectService.getProjectsByProjectName(projectName);
+        return ResponseEntity.ok(projects);
+    }
+
+    @GetMapping("/status/{projectStatus}")
+    @Operation(summary = "Gets projects by status", description = "Retrieves projects by project status")
+    public ResponseEntity<List<ProjectDTO>> getProjectsByProjectStatus(@PathVariable String projectStatus) {
+        ProjectStatus statusEnum = ProjectStatus.valueOf(projectStatus.toUpperCase()); // Convert string to enum
+        List<ProjectDTO> projects = projectService.getProjectsByProjectStatus(statusEnum);
+        return ResponseEntity.ok(projects);
+    }
+
+    @GetMapping("/ordered/start-date/asc")
+    @Operation(summary = "Gets projects ordered by start date ascending",
+            description = "Retrieves all projects ordered by start date in ascending order")
+    public ResponseEntity<List<ProjectDTO>> getAllProjectsOrderedByStartDateAsc() {
+        return ResponseEntity.ok(projectService.getAllProjectsOrderedByStartDateAsc());
+    }
+
+    @GetMapping("/ordered/start-date/desc")
+    @Operation(summary = "Gets projects ordered by start date descending",
+            description = "Retrieves all projects ordered by start date in descending order")
+    public ResponseEntity<List<ProjectDTO>> getAllProjectsOrderedByStartDateDesc() {
+        return ResponseEntity.ok(projectService.getAllProjectsOrderedByStartDateDesc());
+    }
+
+    @GetMapping("/ordered/end-date/asc")
+    @Operation(summary = "Gets projects ordered by end date ascending",
+            description = "Retrieves all projects ordered by end date in ascending order")
+    public ResponseEntity<List<ProjectDTO>> getAllProjectsOrderedByEndDateAsc() {
+        return ResponseEntity.ok(projectService.getAllProjectsOrderedByEndDateAsc());
+    }
+
+    @GetMapping("/ordered/end-date/desc")
+    @Operation(summary = "Gets projects ordered by end date descending",
+            description = "Retrieves all projects ordered by end date in descending order")
+    public ResponseEntity<List<ProjectDTO>> getAllProjectsOrderedByEndDateDesc() {
+        return ResponseEntity.ok(projectService.getAllProjectsOrderedByEndDateDesc());
+    }
+
 }

@@ -7,6 +7,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import osu.exception.RecordNotFoundException;
 import osu.employee.model.Employee;
+import osu.project.enums.ProjectStatus;
 import osu.project.mapper.ProjectMapper;
 import osu.project.model.Project;
 import osu.project.model.ProjectDTO;
@@ -106,6 +107,59 @@ public class ProjectServiceImpl implements ProjectService {
     @Override
     public List<ProjectDTO> getAllProjects() {
         return projectRepository.findAll().stream()
+                .map(projectMapper::toDto)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<ProjectDTO> getProjectsByProjectCode(String projectCode) {
+        return projectRepository.findByProjectCodeIgnoreCase(projectCode).stream()
+                .map(projectMapper::toDto)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<ProjectDTO> getProjectsByProjectName(String projectName) {
+        return projectRepository.findByProjectNameIgnoreCaseContaining(projectName).stream()
+                .map(projectMapper::toDto)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<ProjectDTO> getProjectsByProjectStatus(ProjectStatus projectStatus) {
+        return projectRepository.findByProjectStatus(projectStatus).stream()
+                .map(projectMapper::toDto)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<ProjectDTO> getAllProjectsOrderedByStartDateAsc() {
+        return projectRepository.findAllByOrderByProjectStartAsc()
+                .stream()
+                .map(projectMapper::toDto)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<ProjectDTO> getAllProjectsOrderedByStartDateDesc() {
+        return projectRepository.findAllByOrderByProjectStartDesc()
+                .stream()
+                .map(projectMapper::toDto)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<ProjectDTO> getAllProjectsOrderedByEndDateAsc() {
+        return projectRepository.findAllByOrderByProjectEndAsc()
+                .stream()
+                .map(projectMapper::toDto)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<ProjectDTO> getAllProjectsOrderedByEndDateDesc() {
+        return projectRepository.findAllByOrderByProjectEndDesc()
+                .stream()
                 .map(projectMapper::toDto)
                 .collect(Collectors.toList());
     }
