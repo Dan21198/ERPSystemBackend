@@ -3,6 +3,7 @@ package osu.project.service;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import jakarta.transaction.Transactional;
+import org.hibernate.Hibernate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import osu.exception.RecordNotFoundException;
@@ -99,14 +100,20 @@ public class ProjectServiceImpl implements ProjectService {
     }
 
     @Override
-    public Optional<ProjectDTO> getProject(Long registrationNumber) {
+    @Transactional
+    public Optional<ProjectDTO> getProject(Long registrationNumber, User authenticatedUser) {
+        User managedUser = entityManager.merge(authenticatedUser);
+        Hibernate.initialize(managedUser.getProjects());
+
         return projectRepository.findById(registrationNumber)
+                .filter(project -> project.getUsers().contains(managedUser))
                 .map(projectMapper::toDto);
     }
 
     @Override
-    public List<ProjectDTO> getAllProjects() {
-        return projectRepository.findAll().stream()
+    public List<ProjectDTO> getAllProjects(User authenticatedUser) {
+        return projectRepository.findByUsersContaining(authenticatedUser)
+                .stream()
                 .map(projectMapper::toDto)
                 .collect(Collectors.toList());
     }

@@ -54,18 +54,26 @@ public class ProjectController {
     }
 
     @GetMapping("/{id}")
-    @Operation(summary = "Gets a project", description = "Retrieves a project by its ID")
+    @Operation(summary = "Gets a project for the authenticated user",
+            description = "Retrieves a project by its ID if the user has access")
     public ResponseEntity<ProjectDTO> getProject(@PathVariable Long id) {
-        ProjectDTO projectResponse = projectService.getProject(id)
-                .orElseThrow(() -> new RecordNotFoundException("Project with registration number "
-                        + id + " not found"));
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        User authenticatedUser = (User) authentication.getPrincipal();
+
+        ProjectDTO projectResponse = projectService.getProject(id, authenticatedUser)
+                .orElseThrow(() -> new RecordNotFoundException("Project not found or unauthorized access"));
+
         return new ResponseEntity<>(projectResponse, HttpStatus.OK);
     }
 
     @GetMapping
-    @Operation(summary = "Gets all projects", description = "Retrieves all projects")
+    @Operation(summary = "Gets all projects for the authenticated user",
+            description = "Retrieves all projects created by the authenticated user")
     public ResponseEntity<List<ProjectDTO>> getAllProjects() {
-        List<ProjectDTO> projectResponses = projectService.getAllProjects();
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        User authenticatedUser = (User) authentication.getPrincipal();
+
+        List<ProjectDTO> projectResponses = projectService.getAllProjects(authenticatedUser);
         return new ResponseEntity<>(projectResponses, HttpStatus.OK);
     }
 

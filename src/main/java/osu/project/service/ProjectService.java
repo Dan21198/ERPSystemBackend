@@ -8,15 +8,26 @@ import java.util.Optional;
 
 public interface ProjectService {
     ProjectDTO createProject(ProjectDTO projectDTO, User authenticatedUser);
+
     ProjectDTO updateProject(Long registrationNumber, ProjectDTO projectDTO);
+
     void deleteProject(Long registrationNumber);
-    Optional<ProjectDTO> getProject(Long registrationNumber);
-    List<ProjectDTO> getAllProjects();
+
+    Optional<ProjectDTO> getProject(Long registrationNumber, User authenticatedUser);
+
+    List<ProjectDTO> getAllProjects(User authenticatedUser);
+
     List<ProjectDTO> getProjectsByProjectCode(String projectCode);
+
     List<ProjectDTO> getProjectsByProjectName(String projectName);
+
     List<ProjectDTO> getProjectsByProjectStatus(ProjectStatus projectStatus);
+
     List<ProjectDTO> getAllProjectsOrderedByStartDateAsc();
+
     List<ProjectDTO> getAllProjectsOrderedByStartDateDesc();
+
     List<ProjectDTO> getAllProjectsOrderedByEndDateAsc();
+
     List<ProjectDTO> getAllProjectsOrderedByEndDateDesc();
 }
