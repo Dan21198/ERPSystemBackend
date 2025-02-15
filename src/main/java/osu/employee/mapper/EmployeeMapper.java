@@ -6,8 +6,10 @@ import org.mapstruct.MappingTarget;
 import org.mapstruct.NullValuePropertyMappingStrategy;
 import osu.employee.model.EmployeeDTO;
 import osu.employee.model.Employee;
+import osu.position.mapper.PositionMapper;
 
-@Mapper(componentModel = "spring", nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
+@Mapper(componentModel = "spring", nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE,
+        uses = {PositionMapper.class})
 public interface EmployeeMapper {
     Employee toEntity(EmployeeDTO employeeDTO);
 

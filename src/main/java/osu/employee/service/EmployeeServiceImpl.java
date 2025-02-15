@@ -8,7 +8,6 @@ import osu.employee.model.EmployeeDTO;
 import osu.employee.repository.EmployeeRepository;
 import osu.exception.RecordNotFoundException;
 import osu.employee.mapper.EmployeeMapper;
-import osu.position.mapper.PositionMapper;
 import osu.position.model.Position;
 import osu.position.repository.PositionRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,16 +23,14 @@ public class EmployeeServiceImpl implements EmployeeService {
     private final EmployeeRepository employeeRepository;
     private final PositionRepository positionRepository;
     private final EmployeeMapper employeeMapper;
-    private final PositionMapper positionMapper;
     private static final Logger logger = LoggerFactory.getLogger(EmployeeServiceImpl.class);
 
     @Autowired
     public EmployeeServiceImpl(EmployeeRepository employeeRepository, PositionRepository positionRepository,
-                               EmployeeMapper employeeMapper, PositionMapper positionMapper) {
+                               EmployeeMapper employeeMapper) {
         this.employeeRepository = employeeRepository;
         this.positionRepository = positionRepository;
         this.employeeMapper = employeeMapper;
-        this.positionMapper = positionMapper;
     }
 
     @Override
@@ -79,8 +76,10 @@ public class EmployeeServiceImpl implements EmployeeService {
         try {
             employeeMapper.updateEmployeeFromDto(employeeDTO, existingEmployee);
 
-            if (employeeDTO.getPosition() != null) {
-                Position position = positionMapper.toEntity(employeeDTO.getPosition());
+            if (employeeDTO.getPosition() != null && employeeDTO.getPosition().getId() != null) {
+                Position position = positionRepository.findById(employeeDTO.getPosition().getId())
+                        .orElseThrow(() -> new RecordNotFoundException(
+                                "Position with ID " + employeeDTO.getPosition().getId() + " not found"));
                 existingEmployee.setPosition(position);
             }
 

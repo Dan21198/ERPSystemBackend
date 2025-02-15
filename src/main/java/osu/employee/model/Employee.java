@@ -65,7 +65,7 @@ public class Employee {
     @PositiveOrZero(message = "Gross salary must be zero or positive")
     private Double grossSalary;
 
-    @ManyToOne(fetch = FetchType.EAGER)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "position_id")
     @JsonBackReference
     private Position position;

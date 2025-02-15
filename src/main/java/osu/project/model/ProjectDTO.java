@@ -6,6 +6,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 import osu.employee.model.EmployeeDTO;
+import osu.position.model.PositionDTO;
 import osu.user.model.UserDto;
 import java.util.Date;
 import java.util.Set;
@@ -38,5 +39,6 @@ public class ProjectDTO {
 
     private Integer employeeCount;
     private Set<EmployeeDTO> employees;
+    private Set<PositionDTO> positions;
     private Set<UserDto> users;
 }

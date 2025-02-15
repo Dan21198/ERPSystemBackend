@@ -8,6 +8,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import osu.exception.RecordNotFoundException;
 import osu.employee.model.Employee;
+import osu.position.model.Position;
+import osu.position.repository.PositionRepository;
 import osu.project.enums.ProjectStatus;
 import osu.project.mapper.ProjectMapper;
 import osu.project.model.Project;
@@ -29,14 +31,16 @@ public class ProjectServiceImpl implements ProjectService {
 
     private final ProjectRepository projectRepository;
     private final EmployeeRepository employeeRepository;
+    private final PositionRepository positionRepository;
     private final ProjectMapper projectMapper;
     private static final Logger logger = LoggerFactory.getLogger(ProjectServiceImpl.class);
 
     @Autowired
-    public ProjectServiceImpl(ProjectRepository projectRepository, EmployeeRepository employeeRepository,
+    public ProjectServiceImpl(ProjectRepository projectRepository, EmployeeRepository employeeRepository, PositionRepository positionRepository,
                               ProjectMapper projectMapper) {
         this.projectRepository = projectRepository;
         this.employeeRepository = employeeRepository;
+        this.positionRepository = positionRepository;
         this.projectMapper = projectMapper;
     }
 
@@ -73,6 +77,7 @@ public class ProjectServiceImpl implements ProjectService {
         try {
             projectMapper.updateProjectFromDto(projectDTO, existingProject);
 
+            fetchAndSetPositions(projectDTO, existingProject);
             fetchAndSetEmployees(projectDTO, existingProject);
 
             existingProject.setEmployeeCount(
@@ -179,6 +184,17 @@ public class ProjectServiceImpl implements ProjectService {
                                     "Employee with ID " + employeeDTO.getId() + " not found")))
                     .collect(Collectors.toSet());
             existingProject.setEmployees(newEmployees);
+        }
+    }
+
+    private void fetchAndSetPositions(ProjectDTO projectDTO, Project existingProject) {
+        if (projectDTO.getPositions() != null && !projectDTO.getPositions().isEmpty()) {
+            Set<Position> newPositions = projectDTO.getPositions().stream()
+                    .map(positionDTO -> positionRepository.findById(positionDTO.getId())
+                            .orElseThrow(() -> new RecordNotFoundException(
+                                    "Position with ID " + positionDTO.getId() + " not found")))
+                    .collect(Collectors.toSet());
+            existingProject.setPositions(newPositions);
         }
     }
 }

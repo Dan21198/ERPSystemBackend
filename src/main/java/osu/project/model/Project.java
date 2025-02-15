@@ -6,6 +6,7 @@ import jakarta.validation.constraints.*;
 import lombok.*;
 import org.hibernate.proxy.HibernateProxy;
 import osu.employee.model.Employee;
+import osu.position.model.Position;
 import osu.user.model.User;
 import osu.project.enums.ProjectStatus;
 
@@ -50,6 +51,15 @@ public class Project {
     )
     @JsonManagedReference
     private Set<Employee> employees;
+
+    @ManyToMany(fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
+    @JoinTable(
+            name = "project_position",
+            joinColumns = @JoinColumn(name = "project_id"),
+            inverseJoinColumns = @JoinColumn(name = "position_id")
+    )
+    @JsonManagedReference
+    private Set<Position> positions;
 
     @ManyToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     @JoinTable(
