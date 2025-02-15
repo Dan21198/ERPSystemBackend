@@ -8,6 +8,7 @@ import jakarta.validation.constraints.Size;
 import lombok.*;
 import osu.employee.model.Employee;
 import osu.project.model.Project;
+import osu.tariff.model.Tariff;
 
 import java.util.Set;
 
@@ -31,4 +32,12 @@ public class Position {
     @ManyToMany(mappedBy = "positions")
     @JsonBackReference
     private Set<Project> projects;
+
+    @ManyToMany
+    @JoinTable(
+            name = "position_tariff",
+            joinColumns = @JoinColumn(name = "position_id"),
+            inverseJoinColumns = @JoinColumn(name = "tariff_id")
+    )
+    private Set<Tariff> tariffs;
 }

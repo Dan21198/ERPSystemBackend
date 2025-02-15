@@ -61,6 +61,9 @@ public class Employee {
     @PositiveOrZero(message = "Performance bonus must be zero or positive")
     private Double performanceBonus;
 
+    @NotNull(message = "VO must not be null")
+    private Date VO;
+
     @NotNull(message = "Gross salary must not be null")
     @PositiveOrZero(message = "Gross salary must be zero or positive")
     private Double grossSalary;
