@@ -8,6 +8,7 @@ import lombok.ToString;
 import osu.position.model.PositionDTO;
 import osu.user.model.UserDto;
 import java.util.Date;
+import java.util.Set;
 
 @Getter
 @Setter
@@ -55,6 +56,6 @@ public class EmployeeDTO {
     @Positive(message = "Gross salary must be positive")
     private Double grossSalary;
 
-    private PositionDTO position;
+    private Set<PositionDTO> positions;
     private UserDto createdBy;
 }

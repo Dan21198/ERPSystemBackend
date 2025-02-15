@@ -65,10 +65,14 @@ public class Employee {
     @PositiveOrZero(message = "Gross salary must be zero or positive")
     private Double grossSalary;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "position_id")
+    @ManyToMany
+    @JoinTable(
+            name = "employee_position",
+            joinColumns = @JoinColumn(name = "employee_id"),
+            inverseJoinColumns = @JoinColumn(name = "position_id")
+    )
     @JsonBackReference
-    private Position position;
+    private Set<Position> positions;
 
     @ManyToMany(mappedBy = "employees")
     @JsonManagedReference

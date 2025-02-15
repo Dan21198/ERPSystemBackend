@@ -38,11 +38,13 @@ public class EmployeeServiceImpl implements EmployeeService {
     public EmployeeDTO createEmployee(EmployeeDTO employeeDTO, User authenticatedUser) {
         Employee employee = employeeMapper.toEntity(employeeDTO);
 
-        if (employee.getPosition() != null && employee.getPosition().getId() != null) {
-            Position position = positionRepository.findById(employee.getPosition().getId())
-                    .orElseThrow(() -> new RuntimeException("Position with ID " + employee.getPosition().getId()
-                            + " not found"));
-            employee.setPosition(position);
+        if (employeeDTO.getPositions() != null) {
+            Set<Position> positions = employeeDTO.getPositions().stream()
+                    .map(positionDTO -> positionRepository.findById(positionDTO.getId())
+                            .orElseThrow(() -> new RuntimeException("Position with ID " + positionDTO.getId()
+                                    + " not found")))
+                    .collect(Collectors.toSet());
+            employee.setPositions(positions);
         }
 
         employee.setCreatedBy(authenticatedUser);
@@ -51,12 +53,11 @@ public class EmployeeServiceImpl implements EmployeeService {
         return employeeMapper.toDto(savedEmployee);
     }
 
-
     @Override
     public EmployeeDTO getEmployee(Long personalNumber) {
         Employee employee = employeeRepository.findById(personalNumber)
-                .orElseThrow(() -> new RecordNotFoundException("Employee with personal number "
-                        + personalNumber + " not found"));
+                .orElseThrow(() -> new RecordNotFoundException("Employee with personal number " + personalNumber
+                        + " not found"));
         return employeeMapper.toDto(employee);
     }
 
@@ -69,6 +70,7 @@ public class EmployeeServiceImpl implements EmployeeService {
     }
 
     @Override
+    @Transactional
     public EmployeeDTO updateEmployee(Long personalNumber, EmployeeDTO employeeDTO) {
         Employee existingEmployee = employeeRepository.findById(personalNumber)
                 .orElseThrow(() -> new RecordNotFoundException("Employee not found"));
@@ -76,11 +78,12 @@ public class EmployeeServiceImpl implements EmployeeService {
         try {
             employeeMapper.updateEmployeeFromDto(employeeDTO, existingEmployee);
 
-            if (employeeDTO.getPosition() != null && employeeDTO.getPosition().getId() != null) {
-                Position position = positionRepository.findById(employeeDTO.getPosition().getId())
-                        .orElseThrow(() -> new RecordNotFoundException(
-                                "Position with ID " + employeeDTO.getPosition().getId() + " not found"));
-                existingEmployee.setPosition(position);
+            if (employeeDTO.getPositions() != null) {
+                Set<Position> positions = employeeDTO.getPositions().stream()
+                        .map(positionDTO -> positionRepository.findById(positionDTO.getId())
+                                .orElseThrow(() -> new RecordNotFoundException("Position with ID " + positionDTO.getId() + " not found")))
+                        .collect(Collectors.toSet());
+                existingEmployee.setPositions(positions);
             }
 
             Employee updatedEmployee = employeeRepository.save(existingEmployee);
@@ -105,8 +108,7 @@ public class EmployeeServiceImpl implements EmployeeService {
 
         List<Employee> employees = Optional.ofNullable(firstName)
                 .flatMap(fn -> Optional.ofNullable(lastName)
-                        .map(ln -> employeeRepository.
-                                findByFirstNameIgnoreCaseContainingAndLastNameIgnoreCaseContaining(fn, ln))
+                        .map(ln -> employeeRepository.findByFirstNameIgnoreCaseContainingAndLastNameIgnoreCaseContaining(fn, ln))
                         .or(() -> Optional.of(employeeRepository.findByFirstNameIgnoreCaseContaining(fn))))
                 .orElseGet(() -> employeeRepository.findByLastNameIgnoreCaseContaining(lastName));
 
@@ -117,7 +119,7 @@ public class EmployeeServiceImpl implements EmployeeService {
 
     @Override
     public List<EmployeeDTO> findEmployeesByPositionName(String positionName) {
-        List<Employee> employees = employeeRepository.findByPosition_NameIgnoreCase(positionName);
+        List<Employee> employees = employeeRepository.findByPositions_NameIgnoreCase(positionName);
         return employees.stream()
                 .map(employeeMapper::toDto)
                 .collect(Collectors.toList());

@@ -1,7 +1,7 @@
 package osu.position.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
@@ -24,8 +24,8 @@ public class Position {
     @Size(max = 50, message = "Position name must not exceed 50 characters")
     private String name;
 
-    @OneToMany(mappedBy = "position")
-    @JsonIgnore
+    @ManyToMany(mappedBy = "positions")
+    @JsonManagedReference
     private Set<Employee> employees;
 
     @ManyToMany(mappedBy = "positions")

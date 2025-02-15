@@ -15,7 +15,7 @@ public interface EmployeeRepository extends JpaRepository<Employee, Long> {
 
     List<Employee> findByFirstNameIgnoreCaseContainingAndLastNameIgnoreCaseContaining(String firstName, String lastName);
 
-    List<Employee> findByPosition_NameIgnoreCase(String positionName);
+    List<Employee> findByPositions_NameIgnoreCase(String positionName);
 
     List<Employee> findAllByOrderByGrossSalaryAsc();
 
