@@ -1,6 +1,5 @@
 package osu.employee.model;
 
-import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.*;
@@ -8,9 +7,9 @@ import org.hibernate.proxy.HibernateProxy;
 import jakarta.validation.constraints.*;
 import osu.position.model.Position;
 import osu.user.model.User;
-import osu.project.model.Project;
 
 import java.util.Date;
+import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
 
@@ -61,25 +60,16 @@ public class Employee {
     @PositiveOrZero(message = "Performance bonus must be zero or positive")
     private Double performanceBonus;
 
-    @NotNull(message = "VO must not be null")
-    private Date VO;
+    @FutureOrPresent(message = "performanceBonusEligibilityDate must be in the present or future")
+    private Date performanceBonusEligibilityDate;
 
     @NotNull(message = "Gross salary must not be null")
     @PositiveOrZero(message = "Gross salary must be zero or positive")
     private Double grossSalary;
 
-    @ManyToMany
-    @JoinTable(
-            name = "employee_position",
-            joinColumns = @JoinColumn(name = "employee_id"),
-            inverseJoinColumns = @JoinColumn(name = "position_id")
-    )
-    @JsonBackReference
-    private Set<Position> positions;
-
-    @ManyToMany(mappedBy = "employees")
+    @OneToMany(mappedBy = "employee", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonManagedReference
-    private Set<Project> projects;
+    private Set<Position> positions = new HashSet<>();
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "created_by")

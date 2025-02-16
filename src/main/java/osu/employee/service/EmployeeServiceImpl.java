@@ -38,11 +38,10 @@ public class EmployeeServiceImpl implements EmployeeService {
     public EmployeeDTO createEmployee(EmployeeDTO employeeDTO, User authenticatedUser) {
         Employee employee = employeeMapper.toEntity(employeeDTO);
 
-        if (employeeDTO.getPositions() != null) {
-            Set<Position> positions = employeeDTO.getPositions().stream()
-                    .map(positionDTO -> positionRepository.findById(positionDTO.getId())
-                            .orElseThrow(() -> new RuntimeException("Position with ID " + positionDTO.getId()
-                                    + " not found")))
+        if (employeeDTO.getPositionIds() != null) {
+            Set<Position> positions = employeeDTO.getPositionIds().stream()
+                    .map(positionId -> positionRepository.findById(positionId)
+                            .orElseThrow(() -> new RuntimeException("Position with ID " + positionId + " not found")))
                     .collect(Collectors.toSet());
             employee.setPositions(positions);
         }
@@ -78,10 +77,10 @@ public class EmployeeServiceImpl implements EmployeeService {
         try {
             employeeMapper.updateEmployeeFromDto(employeeDTO, existingEmployee);
 
-            if (employeeDTO.getPositions() != null) {
-                Set<Position> positions = employeeDTO.getPositions().stream()
-                        .map(positionDTO -> positionRepository.findById(positionDTO.getId())
-                                .orElseThrow(() -> new RecordNotFoundException("Position with ID " + positionDTO.getId() + " not found")))
+            if (employeeDTO.getPositionIds() != null) {
+                Set<Position> positions = employeeDTO.getPositionIds().stream()
+                        .map(positionId -> positionRepository.findById(positionId)
+                                .orElseThrow(() -> new RuntimeException("Position with ID " + positionId + " not found")))
                         .collect(Collectors.toSet());
                 existingEmployee.setPositions(positions);
             }

@@ -1,5 +1,8 @@
 package osu.position.service;
 
+import jakarta.transaction.Transactional;
+import osu.employee.model.Employee;
+import osu.employee.repository.EmployeeRepository;
 import osu.exception.RecordNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -17,11 +20,13 @@ public class PositionServiceImpl implements PositionService {
 
     private final PositionRepository positionRepository;
     private final PositionMapper positionMapper;
+    private final EmployeeRepository employeeRepository;
 
     @Autowired
-    public PositionServiceImpl(PositionRepository positionRepository, PositionMapper positionMapper) {
+    public PositionServiceImpl(PositionRepository positionRepository, PositionMapper positionMapper, EmployeeRepository employeeRepository) {
         this.positionRepository = positionRepository;
         this.positionMapper = positionMapper;
+        this.employeeRepository = employeeRepository;
     }
 
     @Override
@@ -45,11 +50,21 @@ public class PositionServiceImpl implements PositionService {
     }
 
     @Override
+    @Transactional
     public PositionDTO updatePosition(Long id, PositionDTO positionDTO) {
         Position existingPosition = positionRepository.findById(id)
                 .orElseThrow(() -> new RecordNotFoundException("Position with ID " + id + " not found"));
 
         positionMapper.updateEntityFromDto(positionDTO, existingPosition);
+
+        if (positionDTO.getEmployee() != null && positionDTO.getEmployee().getId() != null) {
+            Employee employee = employeeRepository.findById(positionDTO.getEmployee().getId())
+                    .orElseThrow(() -> new RecordNotFoundException("Employee with ID " +
+                            positionDTO.getEmployee().getId() + " not found"));
+            existingPosition.setEmployee(employee);
+        } else {
+            existingPosition.setEmployee(null);
+        }
 
         Position updatedPosition = positionRepository.save(existingPosition);
         return positionMapper.toDto(updatedPosition);

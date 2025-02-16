@@ -26,4 +26,5 @@ public class TariffDTO {
 
     @NotNull(message = "Valid to date cannot be blank")
     private Date validTo;
+
 }

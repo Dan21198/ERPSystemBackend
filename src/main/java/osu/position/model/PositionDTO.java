@@ -1,10 +1,9 @@
 package osu.position.model;
 
-import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.*;
+import osu.employee.model.EmployeeDTO;
 import osu.tariff.model.TariffDTO;
-import java.util.Set;
 
 @Getter
 @Setter
@@ -13,9 +12,9 @@ import java.util.Set;
 public class PositionDTO {
     private Long id;
 
-    @NotBlank(message = "Position name cannot be blank")
     @Size(max = 100, message = "Position name must not exceed 100 characters")
     private String name;
 
-    private Set<TariffDTO> tariffs;
+    private TariffDTO tariff;
+    private EmployeeDTO employee;
 }

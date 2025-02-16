@@ -7,7 +7,6 @@ import org.hibernate.Hibernate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import osu.exception.RecordNotFoundException;
-import osu.employee.model.Employee;
 import osu.position.model.Position;
 import osu.position.repository.PositionRepository;
 import osu.project.enums.ProjectStatus;
@@ -15,7 +14,6 @@ import osu.project.mapper.ProjectMapper;
 import osu.project.model.Project;
 import osu.project.model.ProjectDTO;
 import osu.project.repository.ProjectRepository;
-import osu.employee.repository.EmployeeRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import osu.user.model.User;
@@ -30,16 +28,14 @@ import java.util.stream.Collectors;
 public class ProjectServiceImpl implements ProjectService {
 
     private final ProjectRepository projectRepository;
-    private final EmployeeRepository employeeRepository;
     private final PositionRepository positionRepository;
     private final ProjectMapper projectMapper;
     private static final Logger logger = LoggerFactory.getLogger(ProjectServiceImpl.class);
 
     @Autowired
-    public ProjectServiceImpl(ProjectRepository projectRepository, EmployeeRepository employeeRepository, PositionRepository positionRepository,
+    public ProjectServiceImpl(ProjectRepository projectRepository, PositionRepository positionRepository,
                               ProjectMapper projectMapper) {
         this.projectRepository = projectRepository;
-        this.employeeRepository = employeeRepository;
         this.positionRepository = positionRepository;
         this.projectMapper = projectMapper;
     }
@@ -52,8 +48,6 @@ public class ProjectServiceImpl implements ProjectService {
     public ProjectDTO createProject(ProjectDTO projectDTO, User authenticatedUser) {
         Project project = projectMapper.toEntity(projectDTO);
 
-        fetchAndSetEmployees(projectDTO, project);
-        project.setEmployeeCount(project.getEmployees() == null ? 0 : project.getEmployees().size());
 
         if (project.getUsers() == null) {
             project.setUsers(new HashSet<>());
@@ -69,6 +63,7 @@ public class ProjectServiceImpl implements ProjectService {
 
 
     @Override
+    @Transactional
     public ProjectDTO updateProject(Long registrationNumber, ProjectDTO projectDTO) {
         Project existingProject = projectRepository.findById(registrationNumber)
                 .orElseThrow(() -> new RecordNotFoundException(
@@ -78,13 +73,6 @@ public class ProjectServiceImpl implements ProjectService {
             projectMapper.updateProjectFromDto(projectDTO, existingProject);
 
             fetchAndSetPositions(projectDTO, existingProject);
-            fetchAndSetEmployees(projectDTO, existingProject);
-
-            existingProject.setEmployeeCount(
-                    Optional.ofNullable(existingProject.getEmployees())
-                            .map(Set::size)
-                            .orElse(0)
-            );
 
             Project updatedProject = projectRepository.save(existingProject);
 
@@ -174,17 +162,6 @@ public class ProjectServiceImpl implements ProjectService {
                 .stream()
                 .map(projectMapper::toDto)
                 .collect(Collectors.toList());
-    }
-
-    private void fetchAndSetEmployees(ProjectDTO projectDTO, Project existingProject) {
-        if (projectDTO.getEmployees() != null && !projectDTO.getEmployees().isEmpty()) {
-            Set<Employee> newEmployees = projectDTO.getEmployees().stream()
-                    .map(employeeDTO -> employeeRepository.findById(employeeDTO.getId())
-                            .orElseThrow(() -> new RecordNotFoundException(
-                                    "Employee with ID " + employeeDTO.getId() + " not found")))
-                    .collect(Collectors.toSet());
-            existingProject.setEmployees(newEmployees);
-        }
     }
 
     private void fetchAndSetPositions(ProjectDTO projectDTO, Project existingProject) {

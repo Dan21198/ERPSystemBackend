@@ -1,7 +1,6 @@
 package osu.position.model;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
-import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
@@ -9,8 +8,6 @@ import lombok.*;
 import osu.employee.model.Employee;
 import osu.project.model.Project;
 import osu.tariff.model.Tariff;
-
-import java.util.Set;
 
 @Entity
 @Data
@@ -25,19 +22,27 @@ public class Position {
     @Size(max = 50, message = "Position name must not exceed 50 characters")
     private String name;
 
-    @ManyToMany(mappedBy = "positions")
-    @JsonManagedReference
-    private Set<Employee> employees;
+    @ManyToOne
+    @JoinColumn(name = "tariff_id")
+    private Tariff tariff;
 
-    @ManyToMany(mappedBy = "positions")
+    @ManyToOne
+    @JoinColumn(name = "employee_id")
     @JsonBackReference
-    private Set<Project> projects;
+    private Employee employee;
 
-    @ManyToMany
-    @JoinTable(
-            name = "position_tariff",
-            joinColumns = @JoinColumn(name = "position_id"),
-            inverseJoinColumns = @JoinColumn(name = "tariff_id")
-    )
-    private Set<Tariff> tariffs;
+    public void setEmployee(Employee employee) {
+        if (this.employee != null) {
+            this.employee.getPositions().remove(this);
+        }
+        this.employee = employee;
+        if (employee != null) {
+            employee.getPositions().add(this);
+        }
+    }
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "project_id")
+    @JsonBackReference
+    private Project project;
 }

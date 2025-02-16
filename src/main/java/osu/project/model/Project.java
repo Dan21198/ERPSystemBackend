@@ -5,7 +5,6 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 import lombok.*;
 import org.hibernate.proxy.HibernateProxy;
-import osu.employee.model.Employee;
 import osu.position.model.Position;
 import osu.user.model.User;
 import osu.project.enums.ProjectStatus;
@@ -41,25 +40,19 @@ public class Project {
 
     @FutureOrPresent(message = "Project end date must be in the future or present")
     private Date projectEnd;
-    private Integer employeeCount;
 
-    @ManyToMany(fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
-    @JoinTable(
-            name = "project_employee",
-            joinColumns = @JoinColumn(name = "project_id"),
-            inverseJoinColumns = @JoinColumn(name = "employee_id")
-    )
-    @JsonManagedReference
-    private Set<Employee> employees;
 
-    @ManyToMany(fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
-    @JoinTable(
-            name = "project_position",
-            joinColumns = @JoinColumn(name = "project_id"),
-            inverseJoinColumns = @JoinColumn(name = "position_id")
-    )
+    @OneToMany(mappedBy = "project", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonManagedReference
     private Set<Position> positions;
+
+    public void setPositions(Set<Position> positions) {
+        this.positions.clear();
+        if (positions != null) {
+            this.positions.addAll(positions);
+            positions.forEach(position -> position.setProject(this));
+        }
+    }
 
     @ManyToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     @JoinTable(

@@ -36,6 +36,6 @@ public class Tariff {
     @NotNull(message = "Valid to date cannot be blank")
     private Date validTo;
 
-    @ManyToMany(mappedBy = "tariffs")
+    @OneToMany(mappedBy = "tariff")
     private Set<Position> positions;
 }

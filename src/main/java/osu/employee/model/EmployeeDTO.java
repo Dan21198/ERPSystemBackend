@@ -5,7 +5,6 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
-import osu.position.model.PositionDTO;
 import osu.user.model.UserDto;
 import java.util.Date;
 import java.util.Set;
@@ -53,9 +52,12 @@ public class EmployeeDTO {
     @PositiveOrZero(message = "Performance bonus must not be negative")
     private Double performanceBonus;
 
+    @FutureOrPresent(message = "performanceBonusEligibilityDate is required")
+    private Date performanceBonusEligibilityDate;
+
     @Positive(message = "Gross salary must be positive")
     private Double grossSalary;
 
-    private Set<PositionDTO> positions;
+    private Set<Long> positionIds;
     private UserDto createdBy;
 }

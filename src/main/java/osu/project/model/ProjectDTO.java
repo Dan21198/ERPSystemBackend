@@ -5,7 +5,6 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
-import osu.employee.model.EmployeeDTO;
 import osu.position.model.PositionDTO;
 import osu.user.model.UserDto;
 import java.util.Date;
@@ -37,8 +36,6 @@ public class ProjectDTO {
     @Future(message = "Project end date must be in the future")
     private Date projectEnd;
 
-    private Integer employeeCount;
-    private Set<EmployeeDTO> employees;
     private Set<PositionDTO> positions;
     private Set<UserDto> users;
 }
