@@ -1,6 +1,7 @@
 package osu.tariff.model;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -24,7 +25,7 @@ public class Tariff {
     @NotNull(message = "Wage class cannot be blank")
     private Integer wageClass;
 
-    @NotNull(message = "Position title cannot be blank")
+    @NotBlank(message = "Position title cannot be blank")
     private String positionTitle;
 
     @NotNull(message = "Wage tariff cannot be blank")
