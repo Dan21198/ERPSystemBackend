@@ -4,9 +4,14 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
+import jakarta.validation.constraints.Size;
 import lombok.*;
 import org.hibernate.proxy.HibernateProxy;
 
+import java.util.Date;
 import java.util.Objects;
 
 @Entity
@@ -20,11 +25,35 @@ public class Contract {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private String type;
-    private Double availableAmount;
+    @NotBlank(message = "Order number cannot be blank")
+    @Size(max = 50, message = "Order number must not exceed 50 characters")
+    private String orderNumber;
+
+    @NotBlank(message = "Workplace number cannot be blank")
+    @Size(max = 50, message = "Workplace number must not exceed 50 characters")
     private String workplaceNumber;
+
+    @NotBlank(message = "Source cannot be blank")
+    @Size(max = 100, message = "Source must not exceed 100 characters")
     private String source;
-    private String duration;
+
+    @NotBlank(message = "Type cannot be blank")
+    @Size(max = 50, message = "Type must not exceed 50 characters")
+    private String type;
+
+    @NotBlank(message = "Order name cannot be blank")
+    @Size(max = 100, message = "Order name must not exceed 100 characters")
+    private String orderName;
+
+    @NotNull(message = "Available amount is required")
+    @Positive(message = "Available amount must be positive")
+    private Double availableAmount;
+
+    @NotNull(message = "Duration start date is required")
+    private Date durationFrom;
+
+    @NotNull(message = "Duration end date is required")
+    private Date durationTo;
 
     @Override
     public final boolean equals(Object o) {
