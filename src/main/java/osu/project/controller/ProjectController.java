@@ -3,6 +3,7 @@ package osu.project.controller;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContextHolder;
 import osu.exception.RecordNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -56,9 +57,7 @@ public class ProjectController {
     @GetMapping("/{id}")
     @Operation(summary = "Gets a project for the authenticated user",
             description = "Retrieves a project by its ID if the user has access")
-    public ResponseEntity<ProjectDTO> getProject(@PathVariable Long id) {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        User authenticatedUser = (User) authentication.getPrincipal();
+    public ResponseEntity<ProjectDTO> getProject(@PathVariable Long id, @AuthenticationPrincipal User authenticatedUser) {
 
         ProjectDTO projectResponse = projectService.getProject(id, authenticatedUser)
                 .orElseThrow(() -> new RecordNotFoundException("Project not found or unauthorized access"));

@@ -5,8 +5,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import osu.contract.model.ContractDTO;
 import osu.contract.service.ContractService;
-import osu.contract.model.Contract;
 
 import java.util.List;
 
@@ -26,8 +26,8 @@ public class ContractController {
             summary = "Create a new contract",
             description = "Creates a new contract and returns the created contract details"
     )
-    public ResponseEntity<Contract> createContract(@RequestBody Contract contract) {
-        Contract createdContract = contractService.createContract(contract);
+    public ResponseEntity<ContractDTO> createContract(@RequestBody ContractDTO contractDTO) {
+        ContractDTO createdContract = contractService.createContract(contractDTO);
         return new ResponseEntity<>(createdContract, HttpStatus.CREATED);
     }
 
@@ -36,8 +36,8 @@ public class ContractController {
             summary = "Get a contract by ID",
             description = "Retrieves the details of a contract by its ID"
     )
-    public ResponseEntity<Contract> getContract(@PathVariable Long id) {
-        Contract contract = contractService.getContract(id);
+    public ResponseEntity<ContractDTO> getContract(@PathVariable Long id) {
+        ContractDTO contract = contractService.getContract(id);
         return new ResponseEntity<>(contract, HttpStatus.OK);
     }
 
@@ -46,8 +46,8 @@ public class ContractController {
             summary = "Get all contracts",
             description = "Retrieves a list of all contracts"
     )
-    public ResponseEntity<List<Contract>> getAllContracts() {
-        List<Contract> contracts = contractService.getAllContracts();
+    public ResponseEntity<List<ContractDTO>> getAllContracts() {
+        List<ContractDTO> contracts = contractService.getAllContracts();
         return new ResponseEntity<>(contracts, HttpStatus.OK);
     }
 
@@ -56,8 +56,8 @@ public class ContractController {
             summary = "Update a contract",
             description = "Updates the details of an existing contract by its ID"
     )
-    public ResponseEntity<Contract> updateContract(@PathVariable Long id, @RequestBody Contract contract) {
-        Contract updatedContract = contractService.updateContract(id, contract);
+    public ResponseEntity<ContractDTO> updateContract(@PathVariable Long id, @RequestBody ContractDTO contractDTO) {
+        ContractDTO updatedContract = contractService.updateContract(id, contractDTO);
         return new ResponseEntity<>(updatedContract, HttpStatus.OK);
     }
 

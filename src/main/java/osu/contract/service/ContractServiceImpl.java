@@ -1,47 +1,58 @@
 package osu.contract.service;
 
+import osu.contract.mapper.ContractMapper;
 import osu.contract.model.Contract;
+import osu.contract.model.ContractDTO;
 import osu.contract.repository.ContractRepository;
 import osu.exception.RecordNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
 import java.util.List;
-import org.springframework.beans.BeanUtils;
+import java.util.stream.Collectors;
 
 @Service
 public class ContractServiceImpl implements ContractService {
 
     private final ContractRepository contractRepository;
+    private final ContractMapper contractMapper;
 
     @Autowired
-    public ContractServiceImpl(ContractRepository contractRepository) {
+    public ContractServiceImpl(ContractRepository contractRepository, ContractMapper contractMapper) {
         this.contractRepository = contractRepository;
+        this.contractMapper = contractMapper;
     }
 
     @Override
-    public Contract createContract(Contract contract) {
-        return contractRepository.save(contract);
+    public ContractDTO createContract(ContractDTO contractDTO) {
+        Contract contract = contractMapper.toEntity(contractDTO);
+        Contract savedContract = contractRepository.save(contract);
+        return contractMapper.toDto(savedContract);
     }
 
     @Override
-    public Contract getContract(Long orderNumber) {
-        return contractRepository.findById(orderNumber)
+    public ContractDTO getContract(Long orderNumber) {
+        Contract contract = contractRepository.findById(orderNumber)
                 .orElseThrow(() -> new RecordNotFoundException("Contract with orderNumber " + orderNumber + " not found"));
+        return contractMapper.toDto(contract);
     }
 
     @Override
-    public List<Contract> getAllContracts() {
-        return contractRepository.findAll();
+    public List<ContractDTO> getAllContracts() {
+        List<Contract> contracts = contractRepository.findAll();
+        return contracts.stream()
+                .map(contractMapper::toDto)
+                .collect(Collectors.toList());
     }
 
     @Override
-    public Contract updateContract(Long orderNumber, Contract contractDetails) {
+    public ContractDTO updateContract(Long orderNumber, ContractDTO contractDTO) {
         Contract existingContract = contractRepository.findById(orderNumber)
                 .orElseThrow(() -> new RecordNotFoundException("Contract with orderNumber " + orderNumber + " not found"));
 
-        BeanUtils.copyProperties(contractDetails, existingContract, "orderNumber");
-
-        return contractRepository.save(existingContract);
+        contractMapper.toEntity(contractDTO, existingContract);
+        Contract updatedContract = contractRepository.save(existingContract);
+        return contractMapper.toDto(updatedContract);
     }
 
     @Override
