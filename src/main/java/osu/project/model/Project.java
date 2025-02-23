@@ -10,6 +10,7 @@ import osu.user.model.User;
 import osu.project.enums.ProjectStatus;
 
 import java.util.Date;
+import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
 
@@ -38,13 +39,11 @@ public class Project {
     @NotNull(message = "Project start date must not be null")
     private Date projectStart;
 
-    @FutureOrPresent(message = "Project end date must be in the future or present")
     private Date projectEnd;
-
 
     @OneToMany(mappedBy = "project", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonManagedReference
-    private Set<Position> positions;
+    private Set<Position> positions = new HashSet<>();
 
     public void setPositions(Set<Position> positions) {
         this.positions.clear();

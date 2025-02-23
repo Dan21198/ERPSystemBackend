@@ -1,6 +1,8 @@
 package osu.auth.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -70,7 +72,16 @@ public class AuthenticationController {
             summary = "Refresh JWT token",
             description = "Refreshes the JWT token using a valid refresh token"
     )
-    public ResponseEntity<?> refreshToken(@RequestBody Map<String, String> payload) {
+    public ResponseEntity<?> refreshToken(
+            @io.swagger.v3.oas.annotations.parameters.RequestBody(
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(
+                                    example = "{\"refreshToken\": \"token\"}" // Example directly added here
+                            )
+                    )
+            )
+            @RequestBody Map<String, String> payload) {
         try {
             String refreshToken = payload.get("refreshToken");
 

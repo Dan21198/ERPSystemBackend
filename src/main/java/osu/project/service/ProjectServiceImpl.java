@@ -18,10 +18,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import osu.user.model.User;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -47,7 +44,7 @@ public class ProjectServiceImpl implements ProjectService {
     @Transactional
     public ProjectDTO createProject(ProjectDTO projectDTO, User authenticatedUser) {
         Project project = projectMapper.toEntity(projectDTO);
-
+        project.setProjectStatus(determineProjectStatus(project.getProjectStart(), project.getProjectEnd()));
 
         if (project.getUsers() == null) {
             project.setUsers(new HashSet<>());
@@ -71,6 +68,8 @@ public class ProjectServiceImpl implements ProjectService {
 
         try {
             projectMapper.updateProjectFromDto(projectDTO, existingProject);
+            existingProject.setProjectStatus(determineProjectStatus(existingProject.getProjectStart(),
+                    existingProject.getProjectEnd()));
 
             fetchAndSetPositions(projectDTO, existingProject);
 
@@ -172,6 +171,17 @@ public class ProjectServiceImpl implements ProjectService {
                                     "Position with ID " + positionDTO.getId() + " not found")))
                     .collect(Collectors.toSet());
             existingProject.setPositions(newPositions);
+        }
+    }
+
+    private ProjectStatus determineProjectStatus(Date projectStart, Date projectEnd) {
+        Date currentDate = new Date();
+        if (currentDate.before(projectStart)) {
+            return ProjectStatus.NOT_STARTED;
+        } else if (currentDate.after(projectStart) && currentDate.before(projectEnd)) {
+            return ProjectStatus.IN_PROGRESS;
+        } else {
+            return ProjectStatus.COMPLETED;
         }
     }
 }

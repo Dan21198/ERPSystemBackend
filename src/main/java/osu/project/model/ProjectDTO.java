@@ -1,5 +1,6 @@
 package osu.project.model;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.*;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -25,7 +26,7 @@ public class ProjectDTO {
     @Size(max = 100, message = "Project name must not exceed 100 characters")
     private String projectName;
 
-    @NotBlank(message = "Project status cannot be blank")
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     private String projectStatus;
 
     @NotNull(message = "Project start date cannot be null")
