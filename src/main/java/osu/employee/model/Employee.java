@@ -45,8 +45,8 @@ public class Employee {
     private Date contractEnd;
 
     @NotNull(message = "Workload percentage must not be null")
-    @DecimalMin(value = "0.0", message = "Workload percentage must be at least 0")
-    @DecimalMax(value = "100.0", message = "Workload percentage must not exceed 100")
+    @DecimalMin(value = "0.0", message = "Workload percentage must be at least 0.0")
+    @DecimalMax(value = "1.0", message = "Workload percentage must not exceed 1.0")
     private Double workloadPercentage;
 
     @NotBlank(message = "Salary grade must not be blank")
