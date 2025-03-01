@@ -24,11 +24,13 @@ public class Position {
 
     @ManyToOne
     @JoinColumn(name = "tariff_id")
+    @ToString.Exclude
     private Tariff tariff;
 
     @ManyToOne
     @JoinColumn(name = "employee_id")
     @JsonBackReference
+    @ToString.Exclude
     private Employee employee;
 
     public void setEmployee(Employee employee) {
@@ -44,5 +46,6 @@ public class Position {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "project_id")
     @JsonBackReference
+    @ToString.Exclude
     private Project project;
 }

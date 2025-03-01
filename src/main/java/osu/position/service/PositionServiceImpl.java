@@ -57,11 +57,16 @@ public class PositionServiceImpl implements PositionService {
 
         positionMapper.updateEntityFromDto(positionDTO, existingPosition);
 
+        // Update the associated Employee
         if (positionDTO.getEmployee() != null && positionDTO.getEmployee().getId() != null) {
             Employee employee = employeeRepository.findById(positionDTO.getEmployee().getId())
                     .orElseThrow(() -> new RecordNotFoundException("Employee with ID " +
                             positionDTO.getEmployee().getId() + " not found"));
             existingPosition.setEmployee(employee);
+
+            employee.setTariffAmount(existingPosition.getTariff().getWageTariff());
+            employee.calculateGrossSalary();
+            employeeRepository.save(employee);
         } else {
             existingPosition.setEmployee(null);
         }

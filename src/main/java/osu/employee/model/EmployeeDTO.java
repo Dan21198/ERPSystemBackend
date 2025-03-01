@@ -55,7 +55,7 @@ public class EmployeeDTO {
     @FutureOrPresent(message = "performanceBonusEligibilityDate is required")
     private Date performanceBonusEligibilityDate;
 
-    @Positive(message = "Gross salary must be positive")
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     private Double grossSalary;
 
     private Set<Long> positionIds;

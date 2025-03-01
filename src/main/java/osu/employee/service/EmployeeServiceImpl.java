@@ -84,6 +84,7 @@ public class EmployeeServiceImpl implements EmployeeService {
                         .collect(Collectors.toSet());
                 existingEmployee.setPositions(positions);
             }
+            existingEmployee.calculateGrossSalary();
 
             Employee updatedEmployee = employeeRepository.save(existingEmployee);
 

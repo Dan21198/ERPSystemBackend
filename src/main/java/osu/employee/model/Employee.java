@@ -39,7 +39,6 @@ public class Employee {
     private String titleAfterName;
 
     @NotNull(message = "Contract start date must not be null")
-    @PastOrPresent(message = "Contract start date must be in the past or present")
     private Date contractStart;
 
     @FutureOrPresent(message = "Contract end date must be in the future or present")
@@ -52,6 +51,10 @@ public class Employee {
 
     @NotBlank(message = "Salary grade must not be blank")
     private String salaryGrade;
+
+    @NotNull(message = "Tariff amount must not be null")
+    @PositiveOrZero(message = "Tariff amount must be zero or positive")
+    private Double tariffAmount;
 
     @NotNull(message = "Performance bonus must not be null")
     @PositiveOrZero(message = "Performance bonus must be zero or positive")
@@ -71,7 +74,16 @@ public class Employee {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "created_by")
     @JsonManagedReference
+    @ToString.Exclude
     private User createdBy;
+
+    @PrePersist
+    @PreUpdate
+    public void calculateGrossSalary() {
+        this.tariffAmount = getTariffAmount();
+
+        this.grossSalary = this.tariffAmount + (this.performanceBonus != null ? this.performanceBonus : 0.0);
+    }
 
     public Double getTariffAmount() {
         if (positions != null && !positions.isEmpty()) {
