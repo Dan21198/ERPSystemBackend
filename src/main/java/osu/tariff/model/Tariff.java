@@ -38,5 +38,6 @@ public class Tariff {
     private Date validTo;
 
     @OneToMany(mappedBy = "tariff")
+    @ToString.Exclude
     private Set<Position> positions;
 }
