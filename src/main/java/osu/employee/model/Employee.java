@@ -49,8 +49,9 @@ public class Employee {
     @DecimalMax(value = "100", message = "Workload percentage must not exceed 100")
     private Double workloadPercentage;
 
-    @NotBlank(message = "Salary grade must not be blank")
-    private String salaryGrade;
+    @NotNull(message = "wageClass must not be blank")
+    @PositiveOrZero(message = "wageClass must be zero or positive")
+    private int wageClass;
 
     @NotNull(message = "Tariff amount must not be null")
     @PositiveOrZero(message = "Tariff amount must be zero or positive")
@@ -95,6 +96,18 @@ public class Employee {
                     .orElse(0.0);
         }
         return 0.0;
+    }
+
+    public int getWageClass() {
+        if (positions != null && !positions.isEmpty()) {
+            return positions.stream()
+                    .map(Position::getTariff)
+                    .filter(Objects::nonNull)
+                    .map(Tariff::getWageClass)
+                    .findFirst()
+                    .orElse(0);
+        }
+        return 0;
     }
 
     @Override

@@ -43,8 +43,8 @@ public class EmployeeDTO {
     @DecimalMax(value = "1.0", message = "Workload percentage cannot exceed 1.0")
     private Double workloadPercentage;
 
-    @NotBlank(message = "Salary grade cannot be blank")
-    private String salaryGrade;
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
+    private int wageClass;
 
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     private Double tariffAmount;
