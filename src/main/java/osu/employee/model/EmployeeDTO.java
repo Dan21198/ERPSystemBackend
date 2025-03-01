@@ -1,5 +1,6 @@
 package osu.employee.model;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.*;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -45,6 +46,7 @@ public class EmployeeDTO {
     @NotBlank(message = "Salary grade cannot be blank")
     private String salaryGrade;
 
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     private Double tariffAmount;
 
     @PositiveOrZero(message = "Performance bonus must not be negative")
