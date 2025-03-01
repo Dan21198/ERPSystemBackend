@@ -45,8 +45,6 @@ public class EmployeeDTO {
     @NotBlank(message = "Salary grade cannot be blank")
     private String salaryGrade;
 
-    @NotNull(message = "Tariff amount is required")
-    @Positive(message = "Tariff amount must be positive")
     private Double tariffAmount;
 
     @PositiveOrZero(message = "Performance bonus must not be negative")

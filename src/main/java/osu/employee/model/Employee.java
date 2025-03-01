@@ -6,6 +6,7 @@ import lombok.*;
 import org.hibernate.proxy.HibernateProxy;
 import jakarta.validation.constraints.*;
 import osu.position.model.Position;
+import osu.tariff.model.Tariff;
 import osu.user.model.User;
 
 import java.util.Date;
@@ -45,16 +46,12 @@ public class Employee {
     private Date contractEnd;
 
     @NotNull(message = "Workload percentage must not be null")
-    @DecimalMin(value = "0.0", message = "Workload percentage must be at least 0.0")
-    @DecimalMax(value = "1.0", message = "Workload percentage must not exceed 1.0")
+    @DecimalMin(value = "0", message = "Workload percentage must be at least 0")
+    @DecimalMax(value = "100", message = "Workload percentage must not exceed 100")
     private Double workloadPercentage;
 
     @NotBlank(message = "Salary grade must not be blank")
     private String salaryGrade;
-
-    @NotNull(message = "Tariff amount must not be null")
-    @PositiveOrZero(message = "Tariff amount must be zero or positive")
-    private Double tariffAmount;
 
     @NotNull(message = "Performance bonus must not be null")
     @PositiveOrZero(message = "Performance bonus must be zero or positive")
@@ -75,6 +72,18 @@ public class Employee {
     @JoinColumn(name = "created_by")
     @JsonManagedReference
     private User createdBy;
+
+    public Double getTariffAmount() {
+        if (positions != null && !positions.isEmpty()) {
+            return positions.stream()
+                    .map(Position::getTariff)
+                    .filter(Objects::nonNull)
+                    .map(Tariff::getWageTariff)
+                    .findFirst()
+                    .orElse(0.0);
+        }
+        return 0.0;
+    }
 
     @Override
     public final boolean equals(Object o) {
