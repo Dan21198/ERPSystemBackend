@@ -12,6 +12,7 @@ import osu.position.repository.PositionRepository;
 import osu.project.enums.ProjectStatus;
 import osu.project.mapper.ProjectMapper;
 import osu.project.model.Project;
+import osu.project.model.ProjectContractDTO;
 import osu.project.model.ProjectDTO;
 import osu.project.repository.ProjectRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -108,6 +109,17 @@ public class ProjectServiceImpl implements ProjectService {
                 .stream()
                 .map(projectMapper::toDto)
                 .collect(Collectors.toList());
+    }
+
+    @Override
+    @Transactional
+    public Optional<ProjectContractDTO> getProjectWithContracts(Long projectId, User authenticatedUser) {
+        User managedUser = entityManager.merge(authenticatedUser);
+        Hibernate.initialize(managedUser.getProjects());
+
+        return projectRepository.findById(projectId)
+                .filter(project -> project.getUsers().contains(managedUser))
+                .map(projectMapper::toProjectContractDto);
     }
 
     @Override

@@ -46,11 +46,12 @@ public class ContractServiceImpl implements ContractService {
     }
 
     @Override
-    public ContractDTO updateContract(Long orderNumber, ContractDTO contractDTO) {
-        Contract existingContract = contractRepository.findById(orderNumber)
-                .orElseThrow(() -> new RecordNotFoundException("Contract with orderNumber " + orderNumber + " not found"));
+    public ContractDTO updateContract(Long id, ContractDTO contractDTO) {
+        Contract existingContract = contractRepository.findById(id)
+                .orElseThrow(() -> new RecordNotFoundException("Contract with ID " + id + " not found"));
 
         contractMapper.toEntity(contractDTO, existingContract);
+
         Contract updatedContract = contractRepository.save(existingContract);
         return contractMapper.toDto(updatedContract);
     }

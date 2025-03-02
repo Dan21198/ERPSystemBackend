@@ -11,6 +11,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import osu.project.enums.ProjectStatus;
+import osu.project.model.ProjectContractDTO;
 import osu.project.service.ProjectService;
 import osu.project.model.ProjectDTO;
 import osu.user.model.User;
@@ -74,6 +75,19 @@ public class ProjectController {
 
         List<ProjectDTO> projectResponses = projectService.getAllProjects(authenticatedUser);
         return new ResponseEntity<>(projectResponses, HttpStatus.OK);
+    }
+
+    @GetMapping("/{id}/with-contracts")
+    @Operation(summary = "Gets a project with its contracts",
+            description = "Retrieves a project by its ID along with its associated contracts")
+    public ResponseEntity<ProjectContractDTO> getProjectWithContracts(
+            @PathVariable Long id,
+            @AuthenticationPrincipal User authenticatedUser) {
+
+        ProjectContractDTO projectWithContracts = projectService.getProjectWithContracts(id, authenticatedUser)
+                .orElseThrow(() -> new RecordNotFoundException("Project not found or unauthorized access"));
+
+        return new ResponseEntity<>(projectWithContracts, HttpStatus.OK);
     }
 
     @GetMapping("/code/{projectCode}")
