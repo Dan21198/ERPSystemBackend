@@ -1,15 +1,13 @@
 package osu.contract.model;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.Size;
 import lombok.*;
 import org.hibernate.proxy.HibernateProxy;
+import osu.project.model.Project;
 
 import java.util.Date;
 import java.util.Objects;
@@ -54,6 +52,10 @@ public class Contract {
 
     @NotNull(message = "Duration end date is required")
     private Date durationTo;
+
+    @ManyToOne
+    @JoinColumn(name = "project_id")
+    private Project project;
 
     @Override
     public final boolean equals(Object o) {

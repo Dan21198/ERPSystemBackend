@@ -42,4 +42,6 @@ public class ContractDTO {
 
     @NotNull(message = "Duration end date is required")
     private Date durationTo;
+
+    private String projectId;
 }

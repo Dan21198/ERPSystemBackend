@@ -5,6 +5,7 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 import lombok.*;
 import org.hibernate.proxy.HibernateProxy;
+import osu.contract.model.Contract;
 import osu.position.model.Position;
 import osu.user.model.User;
 import osu.project.enums.ProjectStatus;
@@ -53,6 +54,11 @@ public class Project {
             positions.forEach(position -> position.setProject(this));
         }
     }
+
+    @OneToMany(mappedBy = "project", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonManagedReference
+    @ToString.Exclude
+    private Set<Contract> contracts = new HashSet<>();
 
     @ManyToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     @JoinTable(
