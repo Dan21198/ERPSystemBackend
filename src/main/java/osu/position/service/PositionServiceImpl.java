@@ -59,8 +59,7 @@ public class PositionServiceImpl implements PositionService {
         Position existingPosition = positionRepository.findById(id)
                 .orElseThrow(() -> new RecordNotFoundException("Position with ID " + id + " not found"));
 
-        // Preserve existing values
-        String existingName = existingPosition.getName();
+        positionMapper.updateEntityFromDto(positionDTO, existingPosition);
 
         // Update tariff if provided
         if (positionDTO.getTariff() != null && positionDTO.getTariff().getId() != null) {
@@ -70,13 +69,12 @@ public class PositionServiceImpl implements PositionService {
             existingPosition.setTariff(tariff);
         }
 
-        // Update employee if provided
         if (positionDTO.getEmployee() != null && positionDTO.getEmployee().getId() != null) {
             Employee employee = employeeRepository.findById(positionDTO.getEmployee().getId())
                     .orElseThrow(() -> new RecordNotFoundException("Employee with ID " +
                             positionDTO.getEmployee().getId() + " not found"));
 
-            if (existingPosition.getEmployee() != null &&
+            if (existingPosition.getEmployee() != null && existingPosition.getEmployee().getId() != null &&
                     !existingPosition.getEmployee().getId().equals(employee.getId())) {
                 existingPosition.getEmployee().getPositions().remove(existingPosition);
             }
@@ -88,13 +86,6 @@ public class PositionServiceImpl implements PositionService {
                 employee.calculateGrossSalary();
                 employeeRepository.save(employee);
             }
-        }
-
-        // Preserve existing name if not provided
-        if (positionDTO.getName() != null) {
-            existingPosition.setName(positionDTO.getName());
-        } else {
-            existingPosition.setName(existingName);
         }
 
         Position updatedPosition = positionRepository.save(existingPosition);
