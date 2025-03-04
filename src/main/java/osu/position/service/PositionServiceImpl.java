@@ -10,6 +10,8 @@ import osu.position.mapper.PositionMapper;
 import osu.position.model.Position;
 import osu.position.model.PositionDTO;
 import osu.position.repository.PositionRepository;
+import osu.tariff.model.Tariff;
+import osu.tariff.repository.TariffRepository;
 
 import java.util.List;
 import java.util.Optional;
@@ -21,12 +23,14 @@ public class PositionServiceImpl implements PositionService {
     private final PositionRepository positionRepository;
     private final PositionMapper positionMapper;
     private final EmployeeRepository employeeRepository;
+    private final TariffRepository tariffRepository;
 
     @Autowired
-    public PositionServiceImpl(PositionRepository positionRepository, PositionMapper positionMapper, EmployeeRepository employeeRepository) {
+    public PositionServiceImpl(PositionRepository positionRepository, PositionMapper positionMapper, EmployeeRepository employeeRepository, TariffRepository tariffRepository) {
         this.positionRepository = positionRepository;
         this.positionMapper = positionMapper;
         this.employeeRepository = employeeRepository;
+        this.tariffRepository = tariffRepository;
     }
 
     @Override
@@ -55,20 +59,42 @@ public class PositionServiceImpl implements PositionService {
         Position existingPosition = positionRepository.findById(id)
                 .orElseThrow(() -> new RecordNotFoundException("Position with ID " + id + " not found"));
 
-        positionMapper.updateEntityFromDto(positionDTO, existingPosition);
+        // Preserve existing values
+        String existingName = existingPosition.getName();
 
-        // Update the associated Employee
+        // Update tariff if provided
+        if (positionDTO.getTariff() != null && positionDTO.getTariff().getId() != null) {
+            Tariff tariff = tariffRepository.findById(positionDTO.getTariff().getId())
+                    .orElseThrow(() -> new RecordNotFoundException("Tariff with ID " +
+                            positionDTO.getTariff().getId() + " not found"));
+            existingPosition.setTariff(tariff);
+        }
+
+        // Update employee if provided
         if (positionDTO.getEmployee() != null && positionDTO.getEmployee().getId() != null) {
             Employee employee = employeeRepository.findById(positionDTO.getEmployee().getId())
                     .orElseThrow(() -> new RecordNotFoundException("Employee with ID " +
                             positionDTO.getEmployee().getId() + " not found"));
-            existingPosition.setEmployee(employee);
 
-            employee.setTariffAmount(existingPosition.getTariff().getWageTariff());
-            employee.calculateGrossSalary();
-            employeeRepository.save(employee);
+            if (existingPosition.getEmployee() != null &&
+                    !existingPosition.getEmployee().getId().equals(employee.getId())) {
+                existingPosition.getEmployee().getPositions().remove(existingPosition);
+            }
+
+            existingPosition.setEmployee(employee);
+            employee.getPositions().add(existingPosition);
+
+            if (existingPosition.getTariff() != null) {
+                employee.calculateGrossSalary();
+                employeeRepository.save(employee);
+            }
+        }
+
+        // Preserve existing name if not provided
+        if (positionDTO.getName() != null) {
+            existingPosition.setName(positionDTO.getName());
         } else {
-            existingPosition.setEmployee(null);
+            existingPosition.setName(existingName);
         }
 
         Position updatedPosition = positionRepository.save(existingPosition);
