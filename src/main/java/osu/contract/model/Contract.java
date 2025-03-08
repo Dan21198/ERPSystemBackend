@@ -15,7 +15,7 @@ import java.util.Objects;
 @Entity
 @Getter
 @Setter
-@ToString
+@ToString(exclude = "project")
 @RequiredArgsConstructor
 public class Contract {
 
@@ -56,6 +56,19 @@ public class Contract {
     @ManyToOne
     @JoinColumn(name = "project_id")
     private Project project;
+
+    @PrePersist
+    @PreUpdate
+    public void synchronizeOrderName() {
+        if (this.project != null) {
+            this.orderName = this.project.getProjectName();
+        }
+    }
+
+    public void setProject(Project project) {
+        this.project = project;
+        synchronizeOrderName();
+    }
 
     @Override
     public final boolean equals(Object o) {

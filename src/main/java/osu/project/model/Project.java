@@ -60,6 +60,17 @@ public class Project {
     @ToString.Exclude
     private Set<Contract> contracts = new HashSet<>();
 
+    public void setProjectName(String projectName) {
+        this.projectName = projectName;
+        updateContractOrderNames();
+    }
+
+    private void updateContractOrderNames() {
+        if (this.contracts != null) {
+            this.contracts.forEach(Contract::synchronizeOrderName);
+        }
+    }
+
     @ManyToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     @JoinTable(
             name = "user_project",
