@@ -64,11 +64,6 @@ public class ContractServiceImpl implements ContractService {
 
             contractMapper.toEntity(contractDTO, existingContract);
 
-            String originalOrderName = existingContract.getOrderName();
-            if (existingContract.getOrderName() == null || existingContract.getOrderName().isBlank()) {
-                existingContract.setOrderName(originalOrderName);
-            }
-
             if (contractDTO.getProjectId() != null) {
                 Project project = projectRepository.findById(Long.valueOf(contractDTO.getProjectId()))
                         .orElseThrow(() -> new RecordNotFoundException("Project with ID " + contractDTO.getProjectId()
