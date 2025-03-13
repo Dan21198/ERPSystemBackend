@@ -30,11 +30,9 @@ public class ProjectDTO {
     private String projectStatus;
 
     @NotNull(message = "Project start date cannot be null")
-    @FutureOrPresent(message = "Project start date must be in the present or future")
     private Date projectStart;
 
     @NotNull(message = "Project end date cannot be null")
-    @Future(message = "Project end date must be in the future")
     private Date projectEnd;
 
     private Set<PositionDTO> positions;

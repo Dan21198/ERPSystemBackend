@@ -1,25 +1,22 @@
 package osu.project.model;
 
-import lombok.Getter;
-import lombok.Setter;
 import lombok.ToString;
+import lombok.Value;
 import osu.contract.model.ContractDTO;
 import osu.project.enums.ProjectStatus;
 
 import java.util.Date;
 import java.util.Set;
 
-@Getter
-@Setter
+@Value
 @ToString
 public class ProjectContractDTO {
 
-    private Long projectId;
-    private String projectCode;
-    private String projectName;
-    private ProjectStatus projectStatus;
-    private Date projectStart;
-    private Date projectEnd;
-
-    private Set<ContractDTO> contracts;
+    Long projectId;
+    String projectCode;
+    String projectName;
+    ProjectStatus projectStatus;
+    Date projectStart;
+    Date projectEnd;
+    Set<ContractDTO> contracts;
 }
