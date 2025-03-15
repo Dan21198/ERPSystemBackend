@@ -1,6 +1,8 @@
 package osu.position.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.Size;
 import lombok.*;
 import osu.employee.model.EmployeeDTO;
@@ -24,6 +26,13 @@ public class PositionDTO {
 
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     private Long durationInMonths;
+
+    @Min(value = 0, message = "Allocated time percentage must be at least 0")
+    @Max(value = 100, message = "Allocated time percentage must be at most 100")
+    private Integer allocatedTimePercentage;
+
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
+    private Double fte;
 
     private TariffDTO tariff;
     private EmployeeDTO employee;

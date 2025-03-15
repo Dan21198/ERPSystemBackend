@@ -2,6 +2,8 @@ package osu.position.model;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.*;
@@ -40,10 +42,22 @@ public class Position {
 
     private LocalDate endDate;
 
+    @Min(value = 0, message = "Allocated time percentage must be at least 0")
+    @Max(value = 100, message = "Allocated time percentage must be at most 100")
+    private Integer allocatedTimePercentage;
+
     @Transient
     public Long getDurationInMonths() {
         if (startDate != null && endDate != null) {
             return ChronoUnit.MONTHS.between(startDate, endDate);
+        }
+        return null;
+    }
+
+    @Transient
+    public Double getFte() {
+        if (allocatedTimePercentage != null && getDurationInMonths() != null) {
+            return (getDurationInMonths() * allocatedTimePercentage) / 100.0;
         }
         return null;
     }
