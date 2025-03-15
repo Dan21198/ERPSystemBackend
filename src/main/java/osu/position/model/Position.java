@@ -9,6 +9,9 @@ import osu.employee.model.Employee;
 import osu.project.model.Project;
 import osu.tariff.model.Tariff;
 
+import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
+
 @Entity
 @Data
 @NoArgsConstructor
@@ -32,6 +35,18 @@ public class Position {
     @JsonBackReference
     @ToString.Exclude
     private Employee employee;
+
+    private LocalDate startDate;
+
+    private LocalDate endDate;
+
+    @Transient
+    public Long getDurationInMonths() {
+        if (startDate != null && endDate != null) {
+            return ChronoUnit.MONTHS.between(startDate, endDate);
+        }
+        return null;
+    }
 
     public void setEmployee(Employee employee) {
         if (this.employee != null) {
