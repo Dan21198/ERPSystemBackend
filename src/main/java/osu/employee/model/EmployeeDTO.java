@@ -39,8 +39,8 @@ public class EmployeeDTO {
     private Date contractEnd;
 
     @NotNull(message = "Workload percentage is required")
-    @DecimalMin(value = "0.0", message = "Workload percentage must be at least 0.0")
-    @DecimalMax(value = "1.0", message = "Workload percentage cannot exceed 1.0")
+    @DecimalMin(value = "0", message = "Workload percentage must be at least 0")
+    @DecimalMax(value = "100", message = "Workload percentage must not exceed 100")
     private Double workloadPercentage;
 
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)
