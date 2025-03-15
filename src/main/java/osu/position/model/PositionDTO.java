@@ -6,6 +6,7 @@ import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.Size;
 import lombok.*;
 import osu.employee.model.EmployeeDTO;
+import osu.position.validator.DateConstraint;
 import osu.tariff.model.TariffDTO;
 
 import java.time.LocalDate;
@@ -14,6 +15,7 @@ import java.time.LocalDate;
 @Setter
 @ToString
 @RequiredArgsConstructor
+@DateConstraint
 public class PositionDTO {
     private Long id;
 

@@ -8,6 +8,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.*;
 import osu.employee.model.Employee;
+import osu.position.validator.DateConstraint;
 import osu.project.model.Project;
 import osu.tariff.model.Tariff;
 
@@ -17,6 +18,7 @@ import java.time.temporal.ChronoUnit;
 @Entity
 @Data
 @NoArgsConstructor
+@DateConstraint
 public class Position {
 
     @Id
