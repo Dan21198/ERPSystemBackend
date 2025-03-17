@@ -99,5 +99,36 @@ public class PositionServiceImpl implements PositionService {
 
         positionRepository.delete(positionToDelete);
     }
+
+    @Override
+    @Transactional
+    public PositionDTO removeTariffFromPosition(Long id) {
+        Position existingPosition = positionRepository.findById(id)
+                .orElseThrow(() -> new RecordNotFoundException("Position with ID " + id + " not found"));
+
+        existingPosition.setTariff(null);
+
+        Position updatedPosition = positionRepository.save(existingPosition);
+
+        return positionMapper.toDto(updatedPosition);
+    }
+
+    @Override
+    @Transactional
+    public PositionDTO removeEmployeeFromPosition(Long id) {
+        Position existingPosition = positionRepository.findById(id)
+                .orElseThrow(() -> new RecordNotFoundException("Position with ID " + id + " not found"));
+
+        if (existingPosition.getEmployee() != null) {
+            Employee employee = existingPosition.getEmployee();
+            employee.getPositions().remove(existingPosition);
+            existingPosition.setEmployee(null);
+            employeeRepository.save(employee);
+        }
+
+        Position updatedPosition = positionRepository.save(existingPosition);
+
+        return positionMapper.toDto(updatedPosition);
+    }
 }
 

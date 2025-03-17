@@ -68,7 +68,7 @@ public class Employee {
     @PositiveOrZero(message = "Gross salary must be zero or positive")
     private Double grossSalary;
 
-    @OneToMany(mappedBy = "employee", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "employee", cascade = CascadeType.DETACH)
     @JsonManagedReference
     private Set<Position> positions = new HashSet<>();
 
