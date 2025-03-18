@@ -1,5 +1,6 @@
 package osu.position.service;
 
+import osu.employee.model.EmployeeDTO;
 import osu.position.model.PositionDTO;
 
 import java.util.List;
@@ -11,4 +12,5 @@ public interface PositionService {
     List<PositionDTO> getAllPositions();
     PositionDTO updatePosition(Long id, PositionDTO positionDTO);
     void deletePosition(Long id);
+    List<EmployeeDTO> getAllEmployeesOnPosition(Long positionId);
 }

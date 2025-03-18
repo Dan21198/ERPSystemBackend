@@ -35,7 +35,7 @@ public class Position {
 
     private Integer allocatedTimePercentage;
 
-    @OneToMany(mappedBy = "position", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "position", cascade = CascadeType.PERSIST)
     private Set<Assignment> assignments = new HashSet<>();
 
     @Transient

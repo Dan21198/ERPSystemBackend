@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import osu.employee.model.EmployeeDTO;
 import osu.position.service.PositionService;
 import osu.position.model.PositionDTO;
 import java.util.List;
@@ -59,5 +60,13 @@ public class PositionController {
     public ResponseEntity<Void> deletePosition(@PathVariable Long id) {
         positionService.deletePosition(id);
         return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/{id}/employees")
+    @Operation(summary = "Gets all employees on a position",
+            description = "Retrieves all employees associated with a specific position")
+    public ResponseEntity<List<EmployeeDTO>> getAllEmployeesOnPosition(@PathVariable Long id) {
+        List<EmployeeDTO> employees = positionService.getAllEmployeesOnPosition(id);
+        return new ResponseEntity<>(employees, HttpStatus.OK);
     }
 }
