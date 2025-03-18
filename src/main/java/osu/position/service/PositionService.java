@@ -11,6 +11,4 @@ public interface PositionService {
     List<PositionDTO> getAllPositions();
     PositionDTO updatePosition(Long id, PositionDTO positionDTO);
     void deletePosition(Long id);
-    PositionDTO removeTariffFromPosition(Long id);
-    PositionDTO removeEmployeeFromPosition(Long id);
 }

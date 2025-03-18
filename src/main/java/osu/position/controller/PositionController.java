@@ -60,22 +60,4 @@ public class PositionController {
         positionService.deletePosition(id);
         return ResponseEntity.noContent().build();
     }
-
-    @PutMapping("/{id}/remove-tariff")
-    @Operation(summary = "Removes tariff from a position", description = "Removes the tariff associated with a position by its ID")
-    public ResponseEntity<PositionDTO> removeTariffFromPosition(@PathVariable Long id) {
-        PositionDTO updatedPosition = positionService.removeTariffFromPosition(id);
-        return updatedPosition != null
-                ? new ResponseEntity<>(updatedPosition, HttpStatus.OK)
-                : new ResponseEntity<>(HttpStatus.NOT_FOUND);
-    }
-
-    @PutMapping("/{id}/remove-employee")
-    @Operation(summary = "Removes employee from a position", description = "Removes the employee associated with a position by its ID")
-    public ResponseEntity<PositionDTO> removeEmployeeFromPosition(@PathVariable Long id) {
-        PositionDTO updatedPosition = positionService.removeEmployeeFromPosition(id);
-        return updatedPosition != null
-                ? new ResponseEntity<>(updatedPosition, HttpStatus.OK)
-                : new ResponseEntity<>(HttpStatus.NOT_FOUND);
-    }
 }
