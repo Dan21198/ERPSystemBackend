@@ -5,6 +5,7 @@ import jakarta.validation.Valid;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContextHolder;
+import osu.employee.model.EmployeeDTO;
 import osu.exception.RecordNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -140,4 +141,14 @@ public class ProjectController {
         return ResponseEntity.ok(projectService.getAllProjectsOrderedByEndDateDesc());
     }
 
+    @GetMapping("/{id}/employees")
+    @Operation(summary = "Gets all employees on a project",
+            description = "Retrieves all employees associated with a specific project")
+    public ResponseEntity<List<EmployeeDTO>> getAllEmployeesOnProject(
+            @PathVariable Long id,
+            @AuthenticationPrincipal User authenticatedUser) {
+
+        List<EmployeeDTO> employees = projectService.getAllEmployeesOnProject(id, authenticatedUser);
+        return ResponseEntity.ok(employees);
+    }
 }

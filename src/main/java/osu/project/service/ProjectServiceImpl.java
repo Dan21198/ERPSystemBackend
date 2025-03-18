@@ -6,6 +6,10 @@ import jakarta.transaction.Transactional;
 import org.hibernate.Hibernate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import osu.assignment.model.Assignment;
+import osu.employee.mapper.EmployeeMapper;
+import osu.employee.model.Employee;
+import osu.employee.model.EmployeeDTO;
 import osu.exception.RecordNotFoundException;
 import osu.position.model.Position;
 import osu.position.repository.PositionRepository;
@@ -28,14 +32,16 @@ public class ProjectServiceImpl implements ProjectService {
     private final ProjectRepository projectRepository;
     private final PositionRepository positionRepository;
     private final ProjectMapper projectMapper;
+    private final EmployeeMapper employeeMapper;
     private static final Logger logger = LoggerFactory.getLogger(ProjectServiceImpl.class);
 
     @Autowired
     public ProjectServiceImpl(ProjectRepository projectRepository, PositionRepository positionRepository,
-                              ProjectMapper projectMapper) {
+                              ProjectMapper projectMapper, EmployeeMapper employeeMapper) {
         this.projectRepository = projectRepository;
         this.positionRepository = positionRepository;
         this.projectMapper = projectMapper;
+        this.employeeMapper = employeeMapper;
     }
 
     @PersistenceContext
@@ -108,6 +114,32 @@ public class ProjectServiceImpl implements ProjectService {
         return projectRepository.findByUsersContaining(authenticatedUser)
                 .stream()
                 .map(projectMapper::toDto)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    @Transactional
+    public List<EmployeeDTO> getAllEmployeesOnProject(Long projectId, User authenticatedUser) {
+        User managedUser = entityManager.merge(authenticatedUser);
+
+        Project project = projectRepository.findById(projectId)
+                .orElseThrow(() -> new RecordNotFoundException("Project not found with id: " + projectId));
+
+        Hibernate.initialize(managedUser.getProjects());
+
+        if (!managedUser.getProjects().contains(project)) {
+            throw new RecordNotFoundException("Unauthorized access to project");
+        }
+
+        Set<Position> positions = project.getPositions();
+
+        Set<Employee> employees = positions.stream()
+                .flatMap(position -> position.getAssignments().stream())
+                .map(Assignment::getEmployee)
+                .collect(Collectors.toSet());
+
+        return employees.stream()
+                .map(employeeMapper::toDto)
                 .collect(Collectors.toList());
     }
 

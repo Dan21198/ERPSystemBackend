@@ -1,5 +1,6 @@
 package osu.project.service;
 
+import osu.employee.model.EmployeeDTO;
 import osu.project.enums.ProjectStatus;
 import osu.project.model.ProjectContractDTO;
 import osu.project.model.ProjectDTO;
@@ -19,6 +20,8 @@ public interface ProjectService {
     List<ProjectDTO> getAllProjects(User authenticatedUser);
 
     Optional<ProjectContractDTO> getProjectWithContracts(Long projectId, User authenticatedUser);
+
+    List<EmployeeDTO> getAllEmployeesOnProject(Long projectId, User authenticatedUser);
 
     List<ProjectDTO> getProjectsByProjectCode(String projectCode);
 
