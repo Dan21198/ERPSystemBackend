@@ -14,6 +14,7 @@ public interface EmployeeMapper {
 
     @Mapping(target = "assignments", source = "assignments", qualifiedByName = "mapAssignmentsToDTOs")
     @Mapping(target = "wageClass", source = "employee", qualifiedByName = "mapWageClass")
+    @Mapping(target = "tariffAmount", source = "employee", qualifiedByName = "mapTariffAmount")
     EmployeeDTO toDto(Employee employee);
 
     @Mapping(target = "assignments", source = "assignments", qualifiedByName = "mapDTOsToAssignments")
@@ -46,6 +47,11 @@ public interface EmployeeMapper {
     @Named("mapWageClass")
     default int mapWageClass(Employee employee) {
         return employee.getCurrentWageClass();
+    }
+
+    @Named("mapTariffAmount")
+    default double mapTariffAmount(Employee employee) {
+        return employee.getCurrentTariffAmount();
     }
 
     @Mapping(source = "employee.id", target = "employeeId")

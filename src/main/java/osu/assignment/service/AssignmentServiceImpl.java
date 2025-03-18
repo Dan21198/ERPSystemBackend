@@ -98,6 +98,7 @@ public class AssignmentServiceImpl implements AssignmentService {
 
         Assignment createdAssignment = assignmentRepository.save(assignment);
 
+        assignment.getEmployee().calculateGrossSalary();
         return assignmentMapper.toDTO(createdAssignment);
     }
 }
