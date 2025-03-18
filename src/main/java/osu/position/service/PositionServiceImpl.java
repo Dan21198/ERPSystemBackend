@@ -1,17 +1,14 @@
 package osu.position.service;
 
 import jakarta.transaction.Transactional;
-import osu.employee.model.Employee;
-import osu.employee.repository.EmployeeRepository;
-import osu.exception.RecordNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import osu.assignment.repository.AssignmentRepository;
+import osu.exception.RecordNotFoundException;
 import osu.position.mapper.PositionMapper;
 import osu.position.model.Position;
 import osu.position.model.PositionDTO;
 import osu.position.repository.PositionRepository;
-import osu.tariff.model.Tariff;
-import osu.tariff.repository.TariffRepository;
 
 import java.util.List;
 import java.util.Optional;
@@ -22,15 +19,15 @@ public class PositionServiceImpl implements PositionService {
 
     private final PositionRepository positionRepository;
     private final PositionMapper positionMapper;
-    private final EmployeeRepository employeeRepository;
-    private final TariffRepository tariffRepository;
+    private final AssignmentRepository assignmentRepository;
 
     @Autowired
-    public PositionServiceImpl(PositionRepository positionRepository, PositionMapper positionMapper, EmployeeRepository employeeRepository, TariffRepository tariffRepository) {
+    public PositionServiceImpl(PositionRepository positionRepository,
+                               PositionMapper positionMapper,
+                               AssignmentRepository assignmentRepository) {
         this.positionRepository = positionRepository;
         this.positionMapper = positionMapper;
-        this.employeeRepository = employeeRepository;
-        this.tariffRepository = tariffRepository;
+        this.assignmentRepository = assignmentRepository;
     }
 
     @Override
@@ -61,43 +58,18 @@ public class PositionServiceImpl implements PositionService {
 
         positionMapper.updateEntityFromDto(positionDTO, existingPosition);
 
-        // Update tariff if provided
-        if (positionDTO.getTariff() != null && positionDTO.getTariff().getId() != null) {
-            Tariff tariff = tariffRepository.findById(positionDTO.getTariff().getId())
-                    .orElseThrow(() -> new RecordNotFoundException("Tariff with ID " +
-                            positionDTO.getTariff().getId() + " not found"));
-            existingPosition.setTariff(tariff);
-        }
-
-        if (positionDTO.getEmployee() != null && positionDTO.getEmployee().getId() != null) {
-            Employee employee = employeeRepository.findById(positionDTO.getEmployee().getId())
-                    .orElseThrow(() -> new RecordNotFoundException("Employee with ID " +
-                            positionDTO.getEmployee().getId() + " not found"));
-
-            if (existingPosition.getEmployee() != null && existingPosition.getEmployee().getId() != null &&
-                    !existingPosition.getEmployee().getId().equals(employee.getId())) {
-                existingPosition.getEmployee().getPositions().remove(existingPosition);
-            }
-
-            existingPosition.setEmployee(employee);
-            employee.getPositions().add(existingPosition);
-
-            if (existingPosition.getTariff() != null) {
-                employee.calculateGrossSalary();
-                employeeRepository.save(employee);
-            }
-        }
-
         Position updatedPosition = positionRepository.save(existingPosition);
         return positionMapper.toDto(updatedPosition);
     }
 
     @Override
+    @Transactional
     public void deletePosition(Long id) {
         Position positionToDelete = positionRepository.findById(id)
                 .orElseThrow(() -> new RecordNotFoundException("Position with ID " + id + " not found"));
 
+        assignmentRepository.deleteByPosition(positionToDelete);
+
         positionRepository.delete(positionToDelete);
     }
 }
-

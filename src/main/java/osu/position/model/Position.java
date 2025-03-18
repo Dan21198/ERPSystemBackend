@@ -1,52 +1,42 @@
 package osu.position.model;
 
-import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
-import jakarta.validation.constraints.Max;
-import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.*;
-import osu.employee.model.Employee;
-import osu.position.validator.DateConstraint;
+import osu.assignment.model.Assignment;
 import osu.project.model.Project;
-import osu.tariff.model.Tariff;
 
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
+import java.util.HashSet;
+import java.util.Set;
 
 @Entity
-@Data
+@Getter
+@Setter
 @NoArgsConstructor
-@DateConstraint
 public class Position {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @NotBlank(message = "Position name must not be blank")
-    @Size(max = 50, message = "Position name must not exceed 50 characters")
+    @NotBlank
+    @Size(max = 50)
     private String name;
 
-    @ManyToOne
-    @JoinColumn(name = "tariff_id")
-    @ToString.Exclude
-    private Tariff tariff;
-
-    @ManyToOne
-    @JoinColumn(name = "employee_id")
-    @JsonBackReference
-    @ToString.Exclude
-    private Employee employee;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "project_id")
+    private Project project;
 
     private LocalDate startDate;
-
     private LocalDate endDate;
 
-    @Min(value = 0, message = "Allocated time percentage must be at least 0")
-    @Max(value = 100, message = "Allocated time percentage must be at most 100")
     private Integer allocatedTimePercentage;
+
+    @OneToMany(mappedBy = "position", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<Assignment> assignments = new HashSet<>();
 
     @Transient
     public Long getDurationInMonths() {
@@ -63,20 +53,4 @@ public class Position {
         }
         return null;
     }
-
-    public void setEmployee(Employee employee) {
-        if (this.employee != null) {
-            this.employee.getPositions().remove(this);
-        }
-        this.employee = employee;
-        if (employee != null) {
-            employee.getPositions().add(this);
-        }
-    }
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "project_id")
-    @JsonBackReference
-    @ToString.Exclude
-    private Project project;
 }

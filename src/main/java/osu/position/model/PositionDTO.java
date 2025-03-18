@@ -5,9 +5,7 @@ import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.Size;
 import lombok.*;
-import osu.employee.model.EmployeeDTO;
 import osu.position.validator.DateConstraint;
-import osu.tariff.model.TariffDTO;
 
 import java.time.LocalDate;
 
@@ -36,6 +34,4 @@ public class PositionDTO {
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     private Double fte;
 
-    private TariffDTO tariff;
-    private EmployeeDTO employee;
 }

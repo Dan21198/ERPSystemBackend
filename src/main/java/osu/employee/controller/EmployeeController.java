@@ -69,13 +69,6 @@ public class EmployeeController {
         return ResponseEntity.ok(employees);
     }
 
-    @GetMapping("/position-search")
-    @Operation(summary = "Find employees by position", description = "Retrieves employees by the name of their position")
-    public ResponseEntity<List<EmployeeDTO>> getEmployeesByPositionName(@RequestParam String positionName) {
-        List<EmployeeDTO> employees = employeeService.findEmployeesByPositionName(positionName);
-        return ResponseEntity.ok(employees);
-    }
-
     @GetMapping("/by-salary")
     @Operation(summary = "Get employees sorted by gross salary",
             description = "Retrieves employees sorted by gross salary in ascending or descending order")

@@ -7,7 +7,7 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
-import osu.position.model.Position;
+import osu.assignment.model.Assignment;
 
 import java.util.Date;
 import java.util.Set;
@@ -38,6 +38,5 @@ public class Tariff {
     private Date validTo;
 
     @OneToMany(mappedBy = "tariff")
-    @ToString.Exclude
-    private Set<Position> positions;
+    private Set<Assignment> assignments;
 }

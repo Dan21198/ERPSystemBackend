@@ -5,8 +5,7 @@ import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.proxy.HibernateProxy;
 import jakarta.validation.constraints.*;
-import osu.position.model.Position;
-import osu.tariff.model.Tariff;
+import osu.assignment.model.Assignment;
 import osu.user.model.User;
 
 import java.util.Date;
@@ -49,14 +48,6 @@ public class Employee {
     @DecimalMax(value = "100", message = "Workload percentage must not exceed 100")
     private Double workloadPercentage;
 
-    @NotNull(message = "wageClass must not be blank")
-    @PositiveOrZero(message = "wageClass must be zero or positive")
-    private int wageClass;
-
-    @NotNull(message = "Tariff amount must not be null")
-    @PositiveOrZero(message = "Tariff amount must be zero or positive")
-    private Double tariffAmount;
-
     @NotNull(message = "Performance bonus must not be null")
     @PositiveOrZero(message = "Performance bonus must be zero or positive")
     private Double performanceBonus;
@@ -68,9 +59,8 @@ public class Employee {
     @PositiveOrZero(message = "Gross salary must be zero or positive")
     private Double grossSalary;
 
-    @OneToMany(mappedBy = "employee", cascade = CascadeType.ALL, orphanRemoval = true)
-    @JsonManagedReference
-    private Set<Position> positions = new HashSet<>();
+    @OneToMany(mappedBy = "employee", cascade = CascadeType.ALL)
+    private Set<Assignment> assignments = new HashSet<>();
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "created_by")
@@ -81,34 +71,25 @@ public class Employee {
     @PrePersist
     @PreUpdate
     public void calculateGrossSalary() {
-        this.tariffAmount = getTariffAmount();
-
-        this.grossSalary = this.tariffAmount + (this.performanceBonus != null ? this.performanceBonus : 0.0);
+        double tariffAmount = getCurrentTariffAmount();
+        this.grossSalary = tariffAmount + (this.performanceBonus != null ? this.performanceBonus : 0.0);
     }
 
-    public Double getTariffAmount() {
-        if (positions != null && !positions.isEmpty()) {
-            return positions.stream()
-                    .map(Position::getTariff)
-                    .filter(Objects::nonNull)
-                    .map(Tariff::getWageTariff)
-                    .findFirst()
-                    .orElse(0.0);
-        }
-        return 0.0;
+    public Double getCurrentTariffAmount() {
+        return assignments.stream()
+                .filter(Assignment::isActive)
+                .map(assignment -> assignment.getTariff().getWageTariff())
+                .reduce(0.0, Double::sum);
     }
 
-    public int getWageClass() {
-        if (positions != null && !positions.isEmpty()) {
-            return positions.stream()
-                    .map(Position::getTariff)
-                    .filter(Objects::nonNull)
-                    .map(Tariff::getWageClass)
-                    .findFirst()
-                    .orElse(0);
-        }
-        return 0;
+    public int getCurrentWageClass() {
+        return assignments.stream()
+                .filter(Assignment::isActive)
+                .map(assignment -> assignment.getTariff().getWageClass())
+                .findFirst()
+                .orElse(0);
     }
+
 
     @Override
     public final boolean equals(Object o) {

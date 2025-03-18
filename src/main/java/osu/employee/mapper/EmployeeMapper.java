@@ -1,46 +1,60 @@
 package osu.employee.mapper;
 
 import org.mapstruct.*;
-import osu.employee.model.EmployeeDTO;
+import osu.assignment.model.Assignment;
+import osu.assignment.model.AssignmentDTO;
 import osu.employee.model.Employee;
-import osu.position.model.Position;
+import osu.employee.model.EmployeeDTO;
 
 import java.util.Set;
 import java.util.stream.Collectors;
 
 @Mapper(componentModel = "spring", nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
 public interface EmployeeMapper {
-    @Mapping(target = "positionIds", source = "positions", qualifiedByName = "mapPositionsToPositionIds")
+
+    @Mapping(target = "assignments", source = "assignments", qualifiedByName = "mapAssignmentsToDTOs")
+    @Mapping(target = "wageClass", source = "employee", qualifiedByName = "mapWageClass")
     EmployeeDTO toDto(Employee employee);
 
-    @Mapping(target = "positions", source = "positionIds", qualifiedByName = "mapPositionIdsToPositions")
+    @Mapping(target = "assignments", source = "assignments", qualifiedByName = "mapDTOsToAssignments")
     Employee toEntity(EmployeeDTO employeeDTO);
 
     @Mapping(target = "id", ignore = true)
-    @Mapping(target = "positions", source = "positionIds", qualifiedByName = "mapPositionIdsToPositions")
+    @Mapping(target = "assignments", source = "assignments", qualifiedByName = "mapDTOsToAssignments")
     void updateEmployeeFromDto(EmployeeDTO employeeDTO, @MappingTarget Employee employee);
 
-    @Named("mapPositionsToPositionIds")
-    default Set<Long> mapPositionsToPositionIds(Set<Position> positions) {
-        if (positions == null) {
-            return null;
+    @Named("mapAssignmentsToDTOs")
+    default Set<AssignmentDTO> mapAssignmentsToDTOs(Set<Assignment> assignments) {
+        if (assignments == null) {
+            return Set.of();
         }
-        return positions.stream()
-                .map(Position::getId)
+        return assignments.stream()
+                .map(this::toAssignmentDto)
                 .collect(Collectors.toSet());
     }
 
-    @Named("mapPositionIdsToPositions")
-    default Set<Position> mapPositionIdsToPositions(Set<Long> positionIds) {
-        if (positionIds == null) {
-            return null;
+    @Named("mapDTOsToAssignments")
+    default Set<Assignment> mapDTOsToAssignments(Set<AssignmentDTO> assignmentDTOs) {
+        if (assignmentDTOs == null) {
+            return Set.of();
         }
-        return positionIds.stream()
-                .map(id -> {
-                    Position position = new Position();
-                    position.setId(id);
-                    return position;
-                })
+        return assignmentDTOs.stream()
+                .map(this::toAssignmentEntity)
                 .collect(Collectors.toSet());
     }
+
+    @Named("mapWageClass")
+    default int mapWageClass(Employee employee) {
+        return employee.getCurrentWageClass();
+    }
+
+    @Mapping(source = "employee.id", target = "employeeId")
+    @Mapping(source = "position.id", target = "positionId")
+    @Mapping(source = "tariff.id", target = "tariffId")
+    AssignmentDTO toAssignmentDto(Assignment assignment);
+
+    @Mapping(source = "employeeId", target = "employee.id")
+    @Mapping(source = "positionId", target = "position.id")
+    @Mapping(source = "tariffId", target = "tariff.id")
+    Assignment toAssignmentEntity(AssignmentDTO assignmentDTO);
 }

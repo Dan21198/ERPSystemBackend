@@ -42,7 +42,7 @@ public class Project {
 
     private Date projectEnd;
 
-    @OneToMany(mappedBy = "project", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "project", cascade = CascadeType.ALL)
     @JsonManagedReference
     @ToString.Exclude
     private Set<Position> positions = new HashSet<>();

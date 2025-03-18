@@ -6,6 +6,7 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
+import osu.assignment.model.AssignmentDTO;
 import osu.user.model.UserDto;
 import java.util.Date;
 import java.util.Set;
@@ -58,6 +59,6 @@ public class EmployeeDTO {
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     private Double grossSalary;
 
-    private Set<Long> positionIds;
+    private Set<AssignmentDTO> assignments;
     private UserDto createdBy;
 }

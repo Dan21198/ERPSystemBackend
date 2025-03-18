@@ -3,33 +3,35 @@ package osu.employee.service;
 import jakarta.transaction.Transactional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import osu.employee.model.Employee;
-import osu.employee.model.EmployeeDTO;
-import osu.employee.repository.EmployeeRepository;
-import osu.exception.RecordNotFoundException;
-import osu.employee.mapper.EmployeeMapper;
-import osu.position.model.Position;
-import osu.position.repository.PositionRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import osu.assignment.model.Assignment;
+import osu.assignment.repository.AssignmentRepository;
+import osu.employee.model.Employee;
+import osu.employee.model.EmployeeDTO;
+import osu.employee.mapper.EmployeeMapper;
+import osu.employee.repository.EmployeeRepository;
+import osu.exception.RecordNotFoundException;
 import osu.user.model.User;
 
-import java.util.*;
+import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
 public class EmployeeServiceImpl implements EmployeeService {
 
     private final EmployeeRepository employeeRepository;
-    private final PositionRepository positionRepository;
+    private final AssignmentRepository assignmentRepository;
     private final EmployeeMapper employeeMapper;
     private static final Logger logger = LoggerFactory.getLogger(EmployeeServiceImpl.class);
 
     @Autowired
-    public EmployeeServiceImpl(EmployeeRepository employeeRepository, PositionRepository positionRepository,
+    public EmployeeServiceImpl(EmployeeRepository employeeRepository,
+                               AssignmentRepository assignmentRepository,
                                EmployeeMapper employeeMapper) {
         this.employeeRepository = employeeRepository;
-        this.positionRepository = positionRepository;
+        this.assignmentRepository = assignmentRepository;
         this.employeeMapper = employeeMapper;
     }
 
@@ -37,18 +39,22 @@ public class EmployeeServiceImpl implements EmployeeService {
     @Transactional
     public EmployeeDTO createEmployee(EmployeeDTO employeeDTO, User authenticatedUser) {
         Employee employee = employeeMapper.toEntity(employeeDTO);
-
-        if (employeeDTO.getPositionIds() != null) {
-            Set<Position> positions = employeeDTO.getPositionIds().stream()
-                    .map(positionId -> positionRepository.findById(positionId)
-                            .orElseThrow(() -> new RuntimeException("Position with ID " + positionId + " not found")))
-                    .collect(Collectors.toSet());
-            employee.setPositions(positions);
-        }
-
         employee.setCreatedBy(authenticatedUser);
 
         Employee savedEmployee = employeeRepository.save(employee);
+
+        // Handle assignments if provided
+        if (employeeDTO.getAssignments() != null) {
+            Set<Assignment> assignments = employeeDTO.getAssignments().stream()
+                    .map(assignmentDTO -> {
+                        Assignment assignment = employeeMapper.toAssignmentEntity(assignmentDTO);
+                        assignment.setEmployee(savedEmployee);
+                        return assignment;
+                    })
+                    .collect(Collectors.toSet());
+            assignmentRepository.saveAll(assignments);
+        }
+
         return employeeMapper.toDto(savedEmployee);
     }
 
@@ -77,17 +83,22 @@ public class EmployeeServiceImpl implements EmployeeService {
         try {
             employeeMapper.updateEmployeeFromDto(employeeDTO, existingEmployee);
 
-            if (employeeDTO.getPositionIds() != null) {
-                Set<Position> positions = employeeDTO.getPositionIds().stream()
-                        .map(positionId -> positionRepository.findById(positionId)
-                                .orElseThrow(() -> new RuntimeException("Position with ID " + positionId + " not found")))
+            if (employeeDTO.getAssignments() != null) {
+                assignmentRepository.deleteByEmployee(existingEmployee);
+
+                Set<Assignment> assignments = employeeDTO.getAssignments().stream()
+                        .map(assignmentDTO -> {
+                            Assignment assignment = employeeMapper.toAssignmentEntity(assignmentDTO);
+                            assignment.setEmployee(existingEmployee);
+                            return assignment;
+                        })
                         .collect(Collectors.toSet());
-                existingEmployee.setPositions(positions);
+                assignmentRepository.saveAll(assignments);
             }
+
             existingEmployee.calculateGrossSalary();
 
             Employee updatedEmployee = employeeRepository.save(existingEmployee);
-
             return employeeMapper.toDto(updatedEmployee);
         } catch (Exception e) {
             logger.error("Unexpected error while updating employee", e);
@@ -106,20 +117,7 @@ public class EmployeeServiceImpl implements EmployeeService {
             throw new IllegalArgumentException("At least one of firstName or lastName must be provided.");
         }
 
-        List<Employee> employees = Optional.ofNullable(firstName)
-                .flatMap(fn -> Optional.ofNullable(lastName)
-                        .map(ln -> employeeRepository.findByFirstNameIgnoreCaseContainingAndLastNameIgnoreCaseContaining(fn, ln))
-                        .or(() -> Optional.of(employeeRepository.findByFirstNameIgnoreCaseContaining(fn))))
-                .orElseGet(() -> employeeRepository.findByLastNameIgnoreCaseContaining(lastName));
-
-        return employees.stream()
-                .map(employeeMapper::toDto)
-                .collect(Collectors.toList());
-    }
-
-    @Override
-    public List<EmployeeDTO> findEmployeesByPositionName(String positionName) {
-        List<Employee> employees = employeeRepository.findByPositions_NameIgnoreCase(positionName);
+        List<Employee> employees = employeeRepository.findByFirstNameContainingOrLastNameContaining(firstName, lastName);
         return employees.stream()
                 .map(employeeMapper::toDto)
                 .collect(Collectors.toList());
