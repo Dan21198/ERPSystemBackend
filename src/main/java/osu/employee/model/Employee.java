@@ -78,8 +78,9 @@ public class Employee {
     public Double getCurrentTariffAmount() {
         return assignments.stream()
                 .filter(Assignment::isActive)
-                .map(assignment -> assignment.getTariff().getWageTariff())
-                .reduce(0.0, Double::sum);
+                .mapToDouble(assignment -> assignment.getTariff().getWageTariff()
+                        * (assignment.getAllocatedTimePercentage() / 100.0))
+                .sum();
     }
 
     public int getCurrentWageClass() {

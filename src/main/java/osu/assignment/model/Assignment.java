@@ -41,18 +41,14 @@ public class Assignment {
     @Size(max = 50)
     private String positionName;
 
+    private boolean active;
+
     @PrePersist
     @PreUpdate
     private void syncPositionName() {
         if (position != null) {
             this.positionName = position.getName();
         }
-    }
-
-    public boolean isActive() {
-        LocalDate now = LocalDate.now();
-        return (startDate != null && !now.isBefore(startDate)) &&
-                (endDate == null || !now.isAfter(endDate));
     }
 
 }

@@ -1,6 +1,5 @@
 package osu.assignment.model;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -23,14 +22,15 @@ public class AssignmentDTO {
     @NotNull
     private Long tariffId;
 
-    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
+
     private LocalDate startDate;
 
-    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     private LocalDate endDate;
 
-    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
+    @NotNull
+    @Min(0)
+    @Max(100)
     private Integer allocatedTimePercentage;
 
-    private boolean isActive;
+    private boolean active;
 }

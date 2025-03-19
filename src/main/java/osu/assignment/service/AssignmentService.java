@@ -10,4 +10,5 @@ public interface AssignmentService {
     AssignmentDTO getAssignmentById(Long id);
     List<AssignmentDTO> getAllAssignments();
     AssignmentDTO assignTariffAndEmployeeToPosition(AssignmentDTO assignmentDTO);
+    AssignmentDTO deactivateAssignment(Long id);
 }

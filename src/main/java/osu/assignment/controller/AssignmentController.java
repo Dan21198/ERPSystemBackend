@@ -54,4 +54,10 @@ public class AssignmentController {
         AssignmentDTO createdAssignment = assignmentService.assignTariffAndEmployeeToPosition(assignmentDTO);
         return ResponseEntity.ok(createdAssignment);
     }
+
+    @PutMapping("/{id}/deactivate")
+    public ResponseEntity<AssignmentDTO> deactivateAssignment(@PathVariable Long id) {
+        AssignmentDTO deactivatedAssignment = assignmentService.deactivateAssignment(id);
+        return ResponseEntity.ok(deactivatedAssignment);
+    }
 }

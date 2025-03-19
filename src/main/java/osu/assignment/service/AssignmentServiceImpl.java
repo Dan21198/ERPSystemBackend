@@ -9,9 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import osu.employee.model.Employee;
 import osu.employee.repository.EmployeeRepository;
-import osu.position.model.Position;
 import osu.position.repository.PositionRepository;
-import osu.tariff.model.Tariff;
 import osu.tariff.repository.TariffRepository;
 
 import java.util.List;
@@ -78,27 +76,35 @@ public class AssignmentServiceImpl implements AssignmentService {
     @Override
     @Transactional
     public AssignmentDTO assignTariffAndEmployeeToPosition(AssignmentDTO assignmentDTO) {
-        Employee employee = employeeRepository.findById(assignmentDTO.getEmployeeId())
-                .orElseThrow(() -> new RuntimeException("Employee not found with id: " + assignmentDTO.getEmployeeId()));
+        Assignment assignment = assignmentMapper.toEntity(assignmentDTO, employeeRepository, positionRepository,
+                tariffRepository);
 
-        Position position = positionRepository.findById(assignmentDTO.getPositionId())
-                .orElseThrow(() -> new RuntimeException("Position not found with id: " + assignmentDTO.getPositionId()));
-
-        Tariff tariff = tariffRepository.findById(assignmentDTO.getTariffId())
-                .orElseThrow(() -> new RuntimeException("Tariff not found with id: " + assignmentDTO.getTariffId()));
-
-        Assignment assignment = assignmentMapper.toEntity(assignmentDTO);
-        assignment.setEmployee(employee);
-        assignment.setPosition(position);
-        assignment.setTariff(tariff);
-
-        assignment.setStartDate(position.getStartDate());
-        assignment.setEndDate(position.getEndDate());
-        assignment.setAllocatedTimePercentage(position.getAllocatedTimePercentage());
+        assignment.setStartDate(assignmentDTO.getStartDate());
+        assignment.setEndDate(assignmentDTO.getEndDate());
+        assignment.setAllocatedTimePercentage(assignmentDTO.getAllocatedTimePercentage());
+        assignment.setActive(true);
 
         Assignment createdAssignment = assignmentRepository.save(assignment);
 
         assignment.getEmployee().calculateGrossSalary();
+        employeeRepository.save(assignment.getEmployee());
+
         return assignmentMapper.toDTO(createdAssignment);
+    }
+
+    @Override
+    public AssignmentDTO deactivateAssignment(Long id) {
+        Assignment assignment = assignmentRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Assignment not found with id: " + id));
+
+        assignment.setEndDate(java.time.LocalDate.now());
+        assignment.setActive(false);
+        Assignment updatedAssignment = assignmentRepository.save(assignment);
+
+        Employee employee = assignment.getEmployee();
+        assignment.getEmployee().calculateGrossSalary();
+        employeeRepository.save(employee);
+
+        return assignmentMapper.toDTO(updatedAssignment);
     }
 }
