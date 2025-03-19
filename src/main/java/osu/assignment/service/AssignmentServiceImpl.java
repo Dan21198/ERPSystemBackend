@@ -12,6 +12,7 @@ import osu.employee.repository.EmployeeRepository;
 import osu.position.repository.PositionRepository;
 import osu.tariff.repository.TariffRepository;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -49,8 +50,27 @@ public class AssignmentServiceImpl implements AssignmentService {
 
         assignmentMapper.updateEntityFromDTO(assignmentDTO, existingAssignment);
 
+        updateActiveStatusBasedOnDates(existingAssignment);
+
         Assignment updatedAssignment = assignmentRepository.save(existingAssignment);
+
+        if (updatedAssignment.getEmployee() != null) {
+            updatedAssignment.getEmployee().calculateGrossSalary();
+            employeeRepository.save(updatedAssignment.getEmployee());
+        }
+
         return assignmentMapper.toDTO(updatedAssignment);
+    }
+
+    private void updateActiveStatusBasedOnDates(Assignment assignment) {
+        LocalDate currentDate = LocalDate.now();
+
+        assignment.setActive(
+                assignment.getStartDate() != null &&
+                        assignment.getEndDate() != null &&
+                        !currentDate.isBefore(assignment.getStartDate()) &&
+                        !currentDate.isAfter(assignment.getEndDate())
+        );
     }
 
     @Override
