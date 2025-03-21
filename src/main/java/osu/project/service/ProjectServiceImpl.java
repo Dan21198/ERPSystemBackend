@@ -155,6 +155,54 @@ public class ProjectServiceImpl implements ProjectService {
     }
 
     @Override
+    @Transactional
+    public ProjectDTO addPositionToProject(Long projectId, Long positionId, User authenticatedUser) {
+        Map<String, Object> result = validateAndGetProjectAndPosition(projectId, positionId, authenticatedUser);
+        Project project = (Project) result.get("project");
+        Position position = (Position) result.get("position");
+
+        project.getPositions().add(position);
+        position.setProject(project);
+
+        Project updatedProject = projectRepository.save(project);
+        return projectMapper.toDto(updatedProject);
+    }
+
+    @Override
+    @Transactional
+    public ProjectDTO removePositionFromProject(Long projectId, Long positionId, User authenticatedUser) {
+        Map<String, Object> result = validateAndGetProjectAndPosition(projectId, positionId, authenticatedUser);
+        Project project = (Project) result.get("project");
+        Position position = (Position) result.get("position");
+
+        project.getPositions().remove(position);
+        position.setProject(null);
+
+        Project updatedProject = projectRepository.save(project);
+        return projectMapper.toDto(updatedProject);
+    }
+
+    private Map<String, Object> validateAndGetProjectAndPosition(Long projectId, Long positionId, User authenticatedUser) {
+        User managedUser = entityManager.merge(authenticatedUser);
+        Hibernate.initialize(managedUser.getProjects());
+
+        Project project = projectRepository.findById(projectId)
+                .orElseThrow(() -> new RecordNotFoundException("Project not found with id: " + projectId));
+
+        if (!managedUser.getProjects().contains(project)) {
+            throw new RecordNotFoundException("Unauthorized access to project");
+        }
+
+        Position position = positionRepository.findById(positionId)
+                .orElseThrow(() -> new RecordNotFoundException("Position not found with id: " + positionId));
+
+        Map<String, Object> result = new HashMap<>();
+        result.put("project", project);
+        result.put("position", position);
+        return result;
+    }
+
+    @Override
     public List<ProjectDTO> getProjectsByProjectCode(String projectCode) {
         return projectRepository.findByProjectCodeIgnoreCase(projectCode).stream()
                 .map(projectMapper::toDto)

@@ -91,6 +91,28 @@ public class ProjectController {
         return new ResponseEntity<>(projectWithContracts, HttpStatus.OK);
     }
 
+    @PostMapping("/{projectId}/positions/{positionId}")
+    @Operation(summary = "Adds a position to a project", description = "Adds a position to an existing project")
+    public ResponseEntity<ProjectDTO> addPositionToProject(
+            @PathVariable Long projectId,
+            @PathVariable Long positionId,
+            @AuthenticationPrincipal User authenticatedUser) {
+
+        ProjectDTO updatedProject = projectService.addPositionToProject(projectId, positionId, authenticatedUser);
+        return new ResponseEntity<>(updatedProject, HttpStatus.OK);
+    }
+
+    @DeleteMapping("/{projectId}/positions/{positionId}")
+    @Operation(summary = "Removes a position from a project", description = "Removes a position from an existing project")
+    public ResponseEntity<ProjectDTO> removePositionFromProject(
+            @PathVariable Long projectId,
+            @PathVariable Long positionId,
+            @AuthenticationPrincipal User authenticatedUser) {
+
+        ProjectDTO updatedProject = projectService.removePositionFromProject(projectId, positionId, authenticatedUser);
+        return new ResponseEntity<>(updatedProject, HttpStatus.OK);
+    }
+
     @GetMapping("/code/{projectCode}")
     @Operation(summary = "Gets projects by project code", description = "Retrieves projects by project code")
     public ResponseEntity<List<ProjectDTO>> getProjectsByProjectCode(@PathVariable String projectCode) {

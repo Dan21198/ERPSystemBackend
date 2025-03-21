@@ -36,4 +36,8 @@ public interface ProjectService {
     List<ProjectDTO> getAllProjectsOrderedByEndDateAsc();
 
     List<ProjectDTO> getAllProjectsOrderedByEndDateDesc();
+
+    ProjectDTO addPositionToProject(Long projectId, Long positionId, User authenticatedUser);
+
+    ProjectDTO removePositionFromProject(Long projectId, Long positionId, User authenticatedUser);
 }
