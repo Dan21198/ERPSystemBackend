@@ -7,6 +7,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 import osu.assignment.model.AssignmentDTO;
+import osu.performanceBonus.model.PerformanceBonusDTO;
 import osu.user.model.UserDto;
 import java.util.Date;
 import java.util.Set;
@@ -50,11 +51,7 @@ public class EmployeeDTO {
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     private Double tariffAmount;
 
-    @PositiveOrZero(message = "Performance bonus must not be negative")
-    private Double performanceBonus;
-
-    @FutureOrPresent(message = "performanceBonusEligibilityDate is required")
-    private Date performanceBonusEligibilityDate;
+    private Set<PerformanceBonusDTO> performanceBonuses;
 
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     private Double grossSalary;

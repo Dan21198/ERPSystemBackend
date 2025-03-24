@@ -1,0 +1,11 @@
+package osu.performanceBonus.repository;
+
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
+import osu.performanceBonus.model.PerformanceBonus;
+import java.util.Optional;
+
+@Repository
+public interface PerformanceBonusRepository extends JpaRepository<PerformanceBonus, Long> {
+    Optional<PerformanceBonus> findByIdAndEmployeeId(Long bonusId, Long employeeId);
+}

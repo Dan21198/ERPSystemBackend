@@ -6,6 +6,7 @@ import lombok.*;
 import org.hibernate.proxy.HibernateProxy;
 import jakarta.validation.constraints.*;
 import osu.assignment.model.Assignment;
+import osu.performanceBonus.model.PerformanceBonus;
 import osu.user.model.User;
 
 import java.util.Date;
@@ -48,12 +49,8 @@ public class Employee {
     @DecimalMax(value = "100", message = "Workload percentage must not exceed 100")
     private Double workloadPercentage;
 
-    @NotNull(message = "Performance bonus must not be null")
-    @PositiveOrZero(message = "Performance bonus must be zero or positive")
-    private Double performanceBonus;
-
-    @FutureOrPresent(message = "performanceBonusEligibilityDate must be in the present or future")
-    private Date performanceBonusEligibilityDate;
+    @OneToMany(mappedBy = "employee", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<PerformanceBonus> performanceBonuses = new HashSet<>();
 
     @NotNull(message = "Gross salary must not be null")
     @PositiveOrZero(message = "Gross salary must be zero or positive")
@@ -72,7 +69,11 @@ public class Employee {
     @PreUpdate
     public void calculateGrossSalary() {
         double tariffAmount = getCurrentTariffAmount();
-        this.grossSalary = tariffAmount + (this.performanceBonus != null ? this.performanceBonus : 0.0);
+        double activeBonus = performanceBonuses.stream()
+                .filter(PerformanceBonus::getIsActive)
+                .mapToDouble(PerformanceBonus::getAmount)
+                .sum();
+        this.grossSalary = tariffAmount + activeBonus;
     }
 
     public Double getCurrentTariffAmount() {
