@@ -30,7 +30,14 @@ public interface EmployeeMapper {
             return Set.of();
         }
         return assignments.stream()
-                .map(this::toAssignmentDto)
+                .map(assignment -> {
+                    AssignmentDTO dto = toAssignmentDto(assignment);
+                    if (dto.getPerformanceBonuses() != null && assignment.getId() != null) {
+                        dto.getPerformanceBonuses().forEach(bonus ->
+                                bonus.setAssignmentId(assignment.getId()));
+                    }
+                    return dto;
+                })
                 .collect(Collectors.toSet());
     }
 

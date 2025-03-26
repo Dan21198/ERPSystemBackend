@@ -36,6 +36,7 @@ public class Assignment {
     private Set<PerformanceBonus> performanceBonuses;
 
     private LocalDate startDate;
+
     private LocalDate endDate;
 
     @Min(0)

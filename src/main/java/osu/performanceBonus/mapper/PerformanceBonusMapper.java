@@ -12,9 +12,12 @@ public interface PerformanceBonusMapper {
     PerformanceBonusDTO toDto(PerformanceBonus bonus);
 
     @Mapping(target = "assignment", ignore = true)
+    @Mapping(target = "assignment.id", source = "assignmentId")
     PerformanceBonus toEntity(PerformanceBonusDTO bonusDTO);
 
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "assignment", ignore = true)
+    @Mapping(target = "assignment.id", source = "assignmentId")
     void updateBonusFromDto(PerformanceBonusDTO bonusDTO, @MappingTarget PerformanceBonus bonus);
+
 }
