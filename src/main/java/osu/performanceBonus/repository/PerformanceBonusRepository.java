@@ -7,5 +7,5 @@ import java.util.Optional;
 
 @Repository
 public interface PerformanceBonusRepository extends JpaRepository<PerformanceBonus, Long> {
-    Optional<PerformanceBonus> findByIdAndEmployeeId(Long bonusId, Long employeeId);
+    Optional<PerformanceBonus> findByIdAndAssignmentId(Long bonusId, Long assignmentId);
 }

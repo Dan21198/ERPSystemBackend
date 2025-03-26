@@ -3,84 +3,95 @@ package osu.performanceBonus.service;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import osu.employee.model.Employee;
+import osu.assignment.model.Assignment;
+import osu.assignment.repository.AssignmentRepository;
+import osu.employee.repository.EmployeeRepository;
 import osu.performanceBonus.model.PerformanceBonus;
 import osu.performanceBonus.model.PerformanceBonusDTO;
 import osu.performanceBonus.mapper.PerformanceBonusMapper;
-import osu.employee.repository.EmployeeRepository;
 import osu.performanceBonus.repository.PerformanceBonusRepository;
 import osu.exception.RecordNotFoundException;
 
 @Service
 public class PerformanceBonusServiceImpl implements PerformanceBonusService {
 
-    private final EmployeeRepository employeeRepository;
+    private final AssignmentRepository assignmentRepository;
     private final PerformanceBonusRepository performanceBonusRepository;
     private final PerformanceBonusMapper performanceBonusMapper;
+    private final EmployeeRepository employeeRepository;
 
     @Autowired
-    public PerformanceBonusServiceImpl(EmployeeRepository employeeRepository,
+    public PerformanceBonusServiceImpl(AssignmentRepository assignmentRepository,
                                        PerformanceBonusRepository performanceBonusRepository,
-                                       PerformanceBonusMapper performanceBonusMapper) {
-        this.employeeRepository = employeeRepository;
+                                       PerformanceBonusMapper performanceBonusMapper,
+                                       EmployeeRepository employeeRepository) {
+        this.assignmentRepository = assignmentRepository;
         this.performanceBonusRepository = performanceBonusRepository;
         this.performanceBonusMapper = performanceBonusMapper;
+        this.employeeRepository = employeeRepository;
     }
 
     @Override
     @Transactional
-    public PerformanceBonusDTO addBonus(Long employeeId, PerformanceBonusDTO bonusDTO) {
-        Employee employee = employeeRepository.findById(employeeId)
-                .orElseThrow(() -> new RecordNotFoundException("Employee not found"));
+    public PerformanceBonusDTO addBonus(Long assignmentId, PerformanceBonusDTO bonusDTO) {
+        Assignment assignment = assignmentRepository.findById(assignmentId)
+                .orElseThrow(() -> new RecordNotFoundException("Assignment not found with id: " + assignmentId));
 
         PerformanceBonus bonus = performanceBonusMapper.toEntity(bonusDTO);
-        bonus.setEmployee(employee);
+        bonus.setAssignment(assignment);
         PerformanceBonus savedBonus = performanceBonusRepository.save(bonus);
 
-        employee.calculateGrossSalary();
-        employeeRepository.save(employee);
+        updateEmployeeSalaryIfNeeded(assignment);
 
         return performanceBonusMapper.toDto(savedBonus);
     }
 
     @Override
     @Transactional
-    public void removeBonus(Long employeeId, Long bonusId) {
-        Employee employee = employeeRepository.findById(employeeId)
-                .orElseThrow(() -> new RecordNotFoundException("Employee not found with id: " + employeeId));
+    public void removeBonus(Long assignmentId, Long bonusId) {
+        Assignment assignment = assignmentRepository.findById(assignmentId)
+                .orElseThrow(() -> new RecordNotFoundException("Assignment not found with id: " + assignmentId));
 
-        PerformanceBonus bonus = performanceBonusRepository.findByIdAndEmployeeId(bonusId, employeeId)
+        PerformanceBonus bonus = performanceBonusRepository.findById(bonusId)
                 .orElseThrow(() -> new RecordNotFoundException(
-                        String.format("Bonus with id %s not found for employee %s", bonusId, employeeId)));
+                        String.format("Bonus with id %s not found", bonusId)));
 
-        employee.getPerformanceBonuses().remove(bonus);
+        if (!bonus.getAssignment().getId().equals(assignmentId)) {
+            throw new IllegalArgumentException(
+                    String.format("Bonus %s does not belong to assignment %s", bonusId, assignmentId));
+        }
+
+        if (assignment.getPerformanceBonuses() != null) {
+            assignment.getPerformanceBonuses().remove(bonus);
+        }
 
         performanceBonusRepository.delete(bonus);
 
-        employee.calculateGrossSalary();
-        employeeRepository.save(employee);
+        updateEmployeeSalaryIfNeeded(assignment);
     }
 
     @Override
     @Transactional
-    public PerformanceBonusDTO updateBonus(Long employeeId, Long bonusId, PerformanceBonusDTO bonusDTO) {
-        Employee employee = employeeRepository.findById(employeeId)
-                .orElseThrow(() -> new RecordNotFoundException("Employee not found"));
+    public PerformanceBonusDTO updateBonus(Long assignmentId, Long bonusId, PerformanceBonusDTO bonusDTO) {
+        Assignment assignment = assignmentRepository.findById(assignmentId)
+                .orElseThrow(() -> new RecordNotFoundException("Assignment not found with id: " + assignmentId));
 
-        PerformanceBonus existingBonus = performanceBonusRepository.findById(bonusId)
-                .orElseThrow(() -> new RecordNotFoundException("Bonus not found"));
-
-        if (!existingBonus.getEmployee().getId().equals(employeeId)) {
-            throw new IllegalArgumentException("Bonus does not belong to the specified employee");
-        }
+        PerformanceBonus existingBonus = performanceBonusRepository.findByIdAndAssignmentId(bonusId, assignmentId)
+                .orElseThrow(() -> new RecordNotFoundException(
+                        String.format("Bonus with id %s not found for assignment %s", bonusId, assignmentId)));
 
         performanceBonusMapper.updateBonusFromDto(bonusDTO, existingBonus);
         PerformanceBonus updatedBonus = performanceBonusRepository.save(existingBonus);
 
-        employee.calculateGrossSalary();
-        employeeRepository.save(employee);
+        updateEmployeeSalaryIfNeeded(assignment);
 
         return performanceBonusMapper.toDto(updatedBonus);
     }
 
+    private void updateEmployeeSalaryIfNeeded(Assignment assignment) {
+        if (assignment.getEmployee() != null) {
+            assignment.getEmployee().calculateGrossSalary();
+            employeeRepository.save(assignment.getEmployee());
+        }
+    }
 }

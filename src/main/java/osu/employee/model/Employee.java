@@ -49,14 +49,12 @@ public class Employee {
     @DecimalMax(value = "100", message = "Workload percentage must not exceed 100")
     private Double workloadPercentage;
 
-    @OneToMany(mappedBy = "employee", cascade = CascadeType.ALL, orphanRemoval = true)
-    private Set<PerformanceBonus> performanceBonuses = new HashSet<>();
-
     @NotNull(message = "Gross salary must not be null")
     @PositiveOrZero(message = "Gross salary must be zero or positive")
     private Double grossSalary;
 
     @OneToMany(mappedBy = "employee", cascade = CascadeType.ALL)
+    @ToString.Exclude
     private Set<Assignment> assignments = new HashSet<>();
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -69,11 +67,8 @@ public class Employee {
     @PreUpdate
     public void calculateGrossSalary() {
         double tariffAmount = getCurrentTariffAmount();
-        double activeBonus = performanceBonuses.stream()
-                .filter(PerformanceBonus::getIsActive)
-                .mapToDouble(PerformanceBonus::getAmount)
-                .sum();
-        this.grossSalary = tariffAmount + activeBonus;
+        double activeBonuses = getActivePerformanceBonuses();
+        this.grossSalary = tariffAmount + activeBonuses;
     }
 
     public Double getCurrentTariffAmount() {
@@ -84,6 +79,15 @@ public class Employee {
                 .sum();
     }
 
+    public double getActivePerformanceBonuses() {
+        return assignments.stream()
+                .filter(Assignment::isActive)
+                .flatMap(assignment -> assignment.getPerformanceBonuses().stream())
+                .filter(PerformanceBonus::getIsActive)
+                .mapToDouble(PerformanceBonus::getAmount)
+                .sum();
+    }
+
     public int getCurrentWageClass() {
         return assignments.stream()
                 .filter(Assignment::isActive)
@@ -91,7 +95,6 @@ public class Employee {
                 .findFirst()
                 .orElse(0);
     }
-
 
     @Override
     public final boolean equals(Object o) {

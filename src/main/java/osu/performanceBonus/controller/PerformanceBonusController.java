@@ -9,7 +9,7 @@ import osu.performanceBonus.model.PerformanceBonusDTO;
 import osu.performanceBonus.service.PerformanceBonusService;
 
 @RestController
-@RequestMapping("/api/v1/bonuses/{employeeId}/bonuses")
+@RequestMapping("/api/v1/assignments/{assignmentId}/bonuses")
 public class PerformanceBonusController {
 
     private final PerformanceBonusService performanceBonusService;
@@ -20,30 +20,30 @@ public class PerformanceBonusController {
     }
 
     @PostMapping
-    @Operation(summary = "Add a performance bonus to an employee")
+    @Operation(summary = "Add a performance bonus to an assignment")
     public ResponseEntity<PerformanceBonusDTO> addBonus(
-            @PathVariable Long employeeId,
+            @PathVariable Long assignmentId,
             @RequestBody PerformanceBonusDTO bonusDTO) {
-        PerformanceBonusDTO createdBonus = performanceBonusService.addBonus(employeeId, bonusDTO);
+        PerformanceBonusDTO createdBonus = performanceBonusService.addBonus(assignmentId, bonusDTO);
         return ResponseEntity.status(HttpStatus.CREATED).body(createdBonus);
     }
 
     @DeleteMapping("/{bonusId}")
-    @Operation(summary = "Remove a performance bonus from an employee")
+    @Operation(summary = "Remove a performance bonus from an assignment")
     public ResponseEntity<Void> removeBonus(
-            @PathVariable Long employeeId,
+            @PathVariable Long assignmentId,
             @PathVariable Long bonusId) {
-        performanceBonusService.removeBonus(employeeId, bonusId);
+        performanceBonusService.removeBonus(assignmentId, bonusId);
         return ResponseEntity.noContent().build();
     }
 
     @PutMapping("/{bonusId}")
     @Operation(summary = "Update a performance bonus")
     public ResponseEntity<PerformanceBonusDTO> updateBonus(
-            @PathVariable Long employeeId,
+            @PathVariable Long assignmentId,
             @PathVariable Long bonusId,
             @RequestBody PerformanceBonusDTO bonusDTO) {
-        PerformanceBonusDTO updatedBonus = performanceBonusService.updateBonus(employeeId, bonusId, bonusDTO);
+        PerformanceBonusDTO updatedBonus = performanceBonusService.updateBonus(assignmentId, bonusId, bonusDTO);
         return ResponseEntity.ok(updatedBonus);
     }
 }

@@ -4,9 +4,11 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 import lombok.*;
 import osu.employee.model.Employee;
+import osu.performanceBonus.model.PerformanceBonus;
 import osu.position.model.Position;
 import osu.tariff.model.Tariff;
 import java.time.LocalDate;
+import java.util.Set;
 
 @Entity
 @Getter
@@ -30,6 +32,9 @@ public class Assignment {
     @JoinColumn(name = "tariff_id")
     private Tariff tariff;
 
+    @OneToMany(mappedBy = "assignment", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<PerformanceBonus> performanceBonuses;
+
     private LocalDate startDate;
     private LocalDate endDate;
 
@@ -50,5 +55,4 @@ public class Assignment {
             this.positionName = position.getName();
         }
     }
-
 }
