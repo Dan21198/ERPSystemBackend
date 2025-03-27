@@ -17,6 +17,8 @@ import java.time.LocalDate;
 public class PositionDTO {
     private Long id;
 
+    private Long projectId;
+
     @Size(max = 100, message = "Position name must not exceed 100 characters")
     private String name;
 
