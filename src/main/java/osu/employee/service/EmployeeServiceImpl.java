@@ -59,16 +59,21 @@ public class EmployeeServiceImpl implements EmployeeService {
     }
 
     @Override
-    public EmployeeDTO getEmployee(Long personalNumber) {
+    public EmployeeDTO getEmployee(Long personalNumber, User authenticatedUser) {
         Employee employee = employeeRepository.findById(personalNumber)
-                .orElseThrow(() -> new RecordNotFoundException("Employee with personal number " + personalNumber
-                        + " not found"));
+                .orElseThrow(() -> new RecordNotFoundException("Employee not found"));
+
+        if (!employee.getCreatedBy().equals(authenticatedUser)) {
+            throw new SecurityException("Unauthorized access to employee data");
+        }
+
         return employeeMapper.toDto(employee);
     }
 
     @Override
-    public List<EmployeeDTO> getAllEmployees() {
-        List<Employee> employees = employeeRepository.findAll();
+    public List<EmployeeDTO> getAllEmployees(User authenticatedUser) {
+        List<Employee> employees = employeeRepository.findByCreatedBy(authenticatedUser);
+
         return employees.stream()
                 .map(employeeMapper::toDto)
                 .collect(Collectors.toList());
@@ -76,9 +81,13 @@ public class EmployeeServiceImpl implements EmployeeService {
 
     @Override
     @Transactional
-    public EmployeeDTO updateEmployee(Long personalNumber, EmployeeDTO employeeDTO) {
+    public EmployeeDTO updateEmployee(Long personalNumber, EmployeeDTO employeeDTO, User authenticatedUser) {
         Employee existingEmployee = employeeRepository.findById(personalNumber)
                 .orElseThrow(() -> new RecordNotFoundException("Employee not found"));
+
+        if (!existingEmployee.getCreatedBy().equals(authenticatedUser)) {
+            throw new SecurityException("You don't have permission to update this employee");
+        }
 
         try {
             employeeMapper.updateEmployeeFromDto(employeeDTO, existingEmployee);
@@ -107,29 +116,42 @@ public class EmployeeServiceImpl implements EmployeeService {
     }
 
     @Override
-    public void deleteEmployee(Long personalNumber) {
+    public void deleteEmployee(Long personalNumber, User authenticatedUser) {
+        Employee employee = employeeRepository.findById(personalNumber)
+                .orElseThrow(() -> new RecordNotFoundException("Employee not found"));
+
+        if (!employee.getCreatedBy().equals(authenticatedUser)) {
+            throw new SecurityException("You don't have permission to delete this employee");
+        }
+
         employeeRepository.deleteById(personalNumber);
     }
 
     @Override
-    public List<EmployeeDTO> findEmployeesByName(String firstName, String lastName) {
+    public List<EmployeeDTO> findEmployeesByName(String firstName, String lastName, User authenticatedUser) {
         if (firstName == null && lastName == null) {
             throw new IllegalArgumentException("At least one of firstName or lastName must be provided.");
         }
 
-        List<Employee> employees = employeeRepository.findByFirstNameContainingOrLastNameContaining(firstName, lastName);
+        List<Employee> employees = employeeRepository
+                .findByCreatedByAndFirstNameContainingOrLastNameContaining(
+                        authenticatedUser,
+                        firstName,
+                        lastName
+                );
+
         return employees.stream()
                 .map(employeeMapper::toDto)
                 .collect(Collectors.toList());
     }
 
     @Override
-    public List<EmployeeDTO> getEmployeesSortedBySalary(String order) {
+    public List<EmployeeDTO> getEmployeesSortedBySalary(String order, User authenticatedUser) {
         List<Employee> employees;
         if ("desc".equalsIgnoreCase(order)) {
-            employees = employeeRepository.findAllByOrderByGrossSalaryDesc();
+            employees = employeeRepository.findByCreatedByOrderByGrossSalaryDesc(authenticatedUser);
         } else {
-            employees = employeeRepository.findAllByOrderByGrossSalaryAsc();
+            employees = employeeRepository.findByCreatedByOrderByGrossSalaryAsc(authenticatedUser);
         }
         return employees.stream()
                 .map(employeeMapper::toDto)

@@ -11,9 +11,9 @@ import java.util.Optional;
 public interface ProjectService {
     ProjectDTO createProject(ProjectDTO projectDTO, User authenticatedUser);
 
-    ProjectDTO updateProject(Long registrationNumber, ProjectDTO projectDTO);
+    ProjectDTO updateProject(Long registrationNumber, ProjectDTO projectDTO, User authenticatedUser);
 
-    void deleteProject(Long registrationNumber);
+    void deleteProject(Long registrationNumber, User authenticatedUser);
 
     Optional<ProjectDTO> getProject(Long registrationNumber, User authenticatedUser);
 

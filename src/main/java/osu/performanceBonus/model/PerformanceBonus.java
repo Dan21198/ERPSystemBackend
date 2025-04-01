@@ -1,9 +1,12 @@
 package osu.performanceBonus.model;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 import lombok.*;
 import osu.assignment.model.Assignment;
+import osu.user.model.User;
+
 import java.util.Date;
 
 @Entity
@@ -37,4 +40,10 @@ public class PerformanceBonus {
             isActive = true;
         }
     }
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "created_by")
+    @JsonManagedReference
+    @ToString.Exclude
+    private User createdBy;
 }

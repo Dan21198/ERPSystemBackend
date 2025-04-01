@@ -11,6 +11,7 @@ import osu.performanceBonus.model.PerformanceBonusDTO;
 import osu.performanceBonus.mapper.PerformanceBonusMapper;
 import osu.performanceBonus.repository.PerformanceBonusRepository;
 import osu.exception.RecordNotFoundException;
+import osu.user.model.User;
 
 @Service
 public class PerformanceBonusServiceImpl implements PerformanceBonusService {
@@ -33,12 +34,15 @@ public class PerformanceBonusServiceImpl implements PerformanceBonusService {
 
     @Override
     @Transactional
-    public PerformanceBonusDTO addBonus(Long assignmentId, PerformanceBonusDTO bonusDTO) {
+    public PerformanceBonusDTO addBonus(Long assignmentId, PerformanceBonusDTO bonusDTO, User authenticatedUser) {
         Assignment assignment = assignmentRepository.findById(assignmentId)
-                .orElseThrow(() -> new RecordNotFoundException("Assignment not found with id: " + assignmentId));
+                .orElseThrow(() -> new RecordNotFoundException("Assignment not found"));
+
+        verifyAssignmentAccess(assignment, authenticatedUser);
 
         PerformanceBonus bonus = performanceBonusMapper.toEntity(bonusDTO);
         bonus.setAssignment(assignment);
+        bonus.setCreatedBy(authenticatedUser);
         PerformanceBonus savedBonus = performanceBonusRepository.save(bonus);
 
         updateEmployeeSalaryIfNeeded(assignment);
@@ -48,17 +52,21 @@ public class PerformanceBonusServiceImpl implements PerformanceBonusService {
 
     @Override
     @Transactional
-    public void removeBonus(Long assignmentId, Long bonusId) {
+    public void removeBonus(Long assignmentId, Long bonusId, User authenticatedUser) {
         Assignment assignment = assignmentRepository.findById(assignmentId)
-                .orElseThrow(() -> new RecordNotFoundException("Assignment not found with id: " + assignmentId));
+                .orElseThrow(() -> new RecordNotFoundException("Assignment not found"));
+
+        verifyAssignmentAccess(assignment, authenticatedUser);
 
         PerformanceBonus bonus = performanceBonusRepository.findById(bonusId)
-                .orElseThrow(() -> new RecordNotFoundException(
-                        String.format("Bonus with id %s not found", bonusId)));
+                .orElseThrow(() -> new RecordNotFoundException("Bonus not found"));
 
         if (!bonus.getAssignment().getId().equals(assignmentId)) {
-            throw new IllegalArgumentException(
-                    String.format("Bonus %s does not belong to assignment %s", bonusId, assignmentId));
+            throw new IllegalArgumentException("Bonus does not belong to assignment");
+        }
+
+        if (!bonus.getCreatedBy().equals(authenticatedUser)) {
+            throw new SecurityException("You can only delete bonuses you created");
         }
 
         if (assignment.getPerformanceBonuses() != null) {
@@ -66,19 +74,23 @@ public class PerformanceBonusServiceImpl implements PerformanceBonusService {
         }
 
         performanceBonusRepository.delete(bonus);
-
         updateEmployeeSalaryIfNeeded(assignment);
     }
 
     @Override
     @Transactional
-    public PerformanceBonusDTO updateBonus(Long assignmentId, Long bonusId, PerformanceBonusDTO bonusDTO) {
+    public PerformanceBonusDTO updateBonus(Long assignmentId, Long bonusId, PerformanceBonusDTO bonusDTO, User authenticatedUser) {
         Assignment assignment = assignmentRepository.findById(assignmentId)
-                .orElseThrow(() -> new RecordNotFoundException("Assignment not found with id: " + assignmentId));
+                .orElseThrow(() -> new RecordNotFoundException("Assignment not found"));
+
+        verifyAssignmentAccess(assignment, authenticatedUser);
 
         PerformanceBonus existingBonus = performanceBonusRepository.findByIdAndAssignmentId(bonusId, assignmentId)
-                .orElseThrow(() -> new RecordNotFoundException(
-                        String.format("Bonus with id %s not found for assignment %s", bonusId, assignmentId)));
+                .orElseThrow(() -> new RecordNotFoundException("Bonus not found"));
+
+        if (!existingBonus.getCreatedBy().equals(authenticatedUser)) {
+            throw new SecurityException("You can only update bonuses you created");
+        }
 
         performanceBonusMapper.updateBonusFromDto(bonusDTO, existingBonus);
         PerformanceBonus updatedBonus = performanceBonusRepository.save(existingBonus);
@@ -87,6 +99,13 @@ public class PerformanceBonusServiceImpl implements PerformanceBonusService {
 
         return performanceBonusMapper.toDto(updatedBonus);
     }
+
+    private void verifyAssignmentAccess(Assignment assignment, User authenticatedUser) {
+        if (!assignment.getCreatedBy().equals(authenticatedUser)) {
+            throw new SecurityException("You don't have access to this assignment");
+        }
+    }
+
 
     private void updateEmployeeSalaryIfNeeded(Assignment assignment) {
         if (assignment.getEmployee() != null) {

@@ -1,6 +1,8 @@
 package osu.assignment.service;
 
+import jakarta.persistence.EntityManager;
 import jakarta.transaction.Transactional;
+import org.hibernate.Hibernate;
 import osu.assignment.model.AssignmentDTO;
 import osu.assignment.mapper.AssignmentMapper;
 import osu.assignment.model.Assignment;
@@ -11,6 +13,7 @@ import osu.employee.model.Employee;
 import osu.employee.repository.EmployeeRepository;
 import osu.position.repository.PositionRepository;
 import osu.tariff.repository.TariffRepository;
+import osu.user.model.User;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -24,32 +27,38 @@ public class AssignmentServiceImpl implements AssignmentService {
     private final TariffRepository tariffRepository;
     private final PositionRepository positionRepository;
     private final EmployeeRepository employeeRepository;
+    private final EntityManager entityManager;
 
     @Autowired
     public AssignmentServiceImpl(AssignmentRepository assignmentRepository, AssignmentMapper assignmentMapper,
                                  TariffRepository tariffRepository, PositionRepository positionRepository,
-                                 EmployeeRepository employeeRepository) {
+                                 EmployeeRepository employeeRepository, EntityManager entityManager) {
         this.assignmentRepository = assignmentRepository;
         this.assignmentMapper = assignmentMapper;
         this.tariffRepository = tariffRepository;
         this.positionRepository = positionRepository;
         this.employeeRepository = employeeRepository;
+        this.entityManager = entityManager;
     }
 
     @Override
-    public AssignmentDTO createAssignment(AssignmentDTO assignmentDTO) {
+    public AssignmentDTO createAssignment(AssignmentDTO assignmentDTO, User authenticatedUser) {
         Assignment assignment = assignmentMapper.toEntity(assignmentDTO);
+        assignment.setCreatedBy(authenticatedUser);
         Assignment createdAssignment = assignmentRepository.save(assignment);
         return assignmentMapper.toDTO(createdAssignment);
     }
 
     @Override
-    public AssignmentDTO updateAssignment(Long id, AssignmentDTO assignmentDTO) {
+    public AssignmentDTO updateAssignment(Long id, AssignmentDTO assignmentDTO, User authenticatedUser) {
         Assignment existingAssignment = assignmentRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Assignment not found with id: " + id));
+                .orElseThrow(() -> new RuntimeException("Assignment not found"));
+
+        if (!existingAssignment.getCreatedBy().equals(authenticatedUser)) {
+            throw new SecurityException("You can only update assignments you created");
+        }
 
         assignmentMapper.updateEntityFromDTO(assignmentDTO, existingAssignment);
-
         updateActiveStatusBasedOnDates(existingAssignment);
 
         Assignment updatedAssignment = assignmentRepository.save(existingAssignment);
@@ -62,32 +71,51 @@ public class AssignmentServiceImpl implements AssignmentService {
         return assignmentMapper.toDTO(updatedAssignment);
     }
 
-    private void updateActiveStatusBasedOnDates(Assignment assignment) {
-        LocalDate currentDate = LocalDate.now();
-
-        assignment.setActive(
-                assignment.getStartDate() != null &&
-                        assignment.getEndDate() != null &&
-                        !currentDate.isBefore(assignment.getStartDate()) &&
-                        !currentDate.isAfter(assignment.getEndDate())
-        );
+    private void updateActiveStatusBasedOnDates(Assignment existingAssignment) {
+        LocalDate today = LocalDate.now();
+        if (existingAssignment.getStartDate() != null && existingAssignment.getEndDate() != null) {
+            existingAssignment.setActive(today.isAfter(existingAssignment.getStartDate())
+                    && today.isBefore(existingAssignment.getEndDate()));
+        } else {
+            existingAssignment.setActive(false);
+        }
     }
 
     @Override
-    public void deleteAssignment(Long id) {
+    public void deleteAssignment(Long id, User authenticatedUser) {
+        Assignment assignment = assignmentRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Assignment not found"));
+
+        if (!assignment.getCreatedBy().equals(authenticatedUser)) {
+            throw new SecurityException("You can only delete assignments you created");
+        }
+
         assignmentRepository.deleteById(id);
     }
 
     @Override
-    public AssignmentDTO getAssignmentById(Long id) {
+    @Transactional
+    public AssignmentDTO getAssignmentById(Long id, User authenticatedUser) {
+        User managedUser = entityManager.merge(authenticatedUser);
+        Hibernate.initialize(managedUser.getProjects());
+
         Assignment assignment = assignmentRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Assignment not found with id: " + id));
+                .orElseThrow(() -> new RuntimeException("Assignment not found"));
+
+        if (!assignment.getCreatedBy().equals(managedUser)) {
+            throw new SecurityException("You can only view assignments you created");
+        }
+
         return assignmentMapper.toDTO(assignment);
     }
 
     @Override
-    public List<AssignmentDTO> getAllAssignments() {
-        List<Assignment> assignments = assignmentRepository.findAll();
+    @Transactional
+    public List<AssignmentDTO> getAllAssignments(User authenticatedUser) {
+        User managedUser = entityManager.merge(authenticatedUser);
+        Hibernate.initialize(managedUser.getProjects());
+
+        List<Assignment> assignments = assignmentRepository.findByCreatedBy(managedUser);
         return assignments.stream()
                 .map(assignmentMapper::toDTO)
                 .collect(Collectors.toList());
@@ -95,9 +123,10 @@ public class AssignmentServiceImpl implements AssignmentService {
 
     @Override
     @Transactional
-    public AssignmentDTO assignTariffAndEmployeeToPosition(AssignmentDTO assignmentDTO) {
+    public AssignmentDTO assignTariffAndEmployeeToPosition(AssignmentDTO assignmentDTO, User authenticatedUser) {
         Assignment assignment = assignmentMapper.toEntity(assignmentDTO, employeeRepository, positionRepository,
                 tariffRepository);
+        assignment.setCreatedBy(authenticatedUser);
 
         assignment.setStartDate(assignmentDTO.getStartDate());
         assignment.setEndDate(assignmentDTO.getEndDate());
@@ -113,16 +142,20 @@ public class AssignmentServiceImpl implements AssignmentService {
     }
 
     @Override
-    public AssignmentDTO deactivateAssignment(Long id) {
+    public AssignmentDTO deactivateAssignment(Long id, User authenticatedUser) {
         Assignment assignment = assignmentRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Assignment not found with id: " + id));
+                .orElseThrow(() -> new RuntimeException("Assignment not found"));
 
-        assignment.setEndDate(java.time.LocalDate.now());
+        if (!assignment.getCreatedBy().equals(authenticatedUser)) {
+            throw new SecurityException("You can only deactivate assignments you created");
+        }
+
+        assignment.setEndDate(LocalDate.now());
         assignment.setActive(false);
         Assignment updatedAssignment = assignmentRepository.save(assignment);
 
         Employee employee = assignment.getEmployee();
-        assignment.getEmployee().calculateGrossSalary();
+        employee.calculateGrossSalary();
         employeeRepository.save(employee);
 
         return assignmentMapper.toDTO(updatedAssignment);

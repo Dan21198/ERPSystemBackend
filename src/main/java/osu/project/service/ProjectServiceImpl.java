@@ -68,10 +68,14 @@ public class ProjectServiceImpl implements ProjectService {
 
     @Override
     @Transactional
-    public ProjectDTO updateProject(Long registrationNumber, ProjectDTO projectDTO) {
-        Project existingProject = projectRepository.findById(registrationNumber)
+    public ProjectDTO updateProject(Long projectId, ProjectDTO projectDTO, User authenticatedUser) {
+        Project existingProject = projectRepository.findById(projectId)
                 .orElseThrow(() -> new RecordNotFoundException(
-                        "Project with registration number " + registrationNumber + " not found"));
+                        "Project with ID " + projectId + " not found"));
+
+        if (isProjectOwnedByUser(existingProject, authenticatedUser)) {
+            throw new RecordNotFoundException("Project not found or unauthorized access");
+        }
 
         try {
             projectMapper.updateProjectFromDto(projectDTO, existingProject);
@@ -81,7 +85,6 @@ public class ProjectServiceImpl implements ProjectService {
             fetchAndSetPositions(projectDTO, existingProject);
 
             Project updatedProject = projectRepository.save(existingProject);
-
             return projectMapper.toDto(updatedProject);
         } catch (Exception e) {
             logger.error("Unexpected error while updating project", e);
@@ -90,10 +93,13 @@ public class ProjectServiceImpl implements ProjectService {
     }
 
     @Override
-    public void deleteProject(Long registrationNumber) {
-        Project projectToDelete = projectRepository.findById(registrationNumber)
-                .orElseThrow(() -> new RecordNotFoundException("Project with registration number "
-                        + registrationNumber + " not found"));
+    public void deleteProject(Long projectId, User authenticatedUser) {
+        Project projectToDelete = projectRepository.findById(projectId)
+                .orElseThrow(() -> new RecordNotFoundException("Project with ID " + projectId + " not found"));
+
+        if (isProjectOwnedByUser(projectToDelete, authenticatedUser)) {
+            throw new RecordNotFoundException("Project not found or unauthorized access");
+        }
 
         projectRepository.delete(projectToDelete);
     }
@@ -275,5 +281,11 @@ public class ProjectServiceImpl implements ProjectService {
         } else {
             return ProjectStatus.COMPLETED;
         }
+    }
+
+    private boolean isProjectOwnedByUser(Project project, User user) {
+        User managedUser = entityManager.merge(user);
+        Hibernate.initialize(managedUser.getProjects());
+        return !project.getUsers().contains(managedUser);
     }
 }

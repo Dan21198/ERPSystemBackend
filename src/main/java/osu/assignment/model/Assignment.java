@@ -1,5 +1,6 @@
 package osu.assignment.model;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 import lombok.*;
@@ -7,6 +8,8 @@ import osu.employee.model.Employee;
 import osu.performanceBonus.model.PerformanceBonus;
 import osu.position.model.Position;
 import osu.tariff.model.Tariff;
+import osu.user.model.User;
+
 import java.time.LocalDate;
 import java.util.HashSet;
 import java.util.Set;
@@ -57,4 +60,10 @@ public class Assignment {
             this.positionName = position.getName();
         }
     }
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "created_by")
+    @JsonManagedReference
+    @ToString.Exclude
+    private User createdBy;
 }

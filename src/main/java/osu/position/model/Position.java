@@ -1,11 +1,13 @@
 package osu.position.model;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.*;
 import osu.assignment.model.Assignment;
 import osu.project.model.Project;
+import osu.user.model.User;
 
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
@@ -37,6 +39,12 @@ public class Position {
 
     @OneToMany(mappedBy = "position", cascade = CascadeType.PERSIST)
     private Set<Assignment> assignments = new HashSet<>();
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "created_by")
+    @JsonManagedReference
+    @ToString.Exclude
+    private User createdBy;
 
     @Transient
     public Long getDurationInMonths() {

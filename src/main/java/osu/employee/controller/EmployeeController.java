@@ -25,38 +25,46 @@ public class EmployeeController {
 
     @PostMapping
     @Operation(summary = "Creates an employee", description = "Creates a new employee and returns the created employee's details")
-    public ResponseEntity<EmployeeDTO> createEmployee(@RequestBody EmployeeDTO employeeDTO,
-                                                      @AuthenticationPrincipal User authenticatedUser) {
+    public ResponseEntity<EmployeeDTO> createEmployee(
+            @RequestBody EmployeeDTO employeeDTO,
+            @AuthenticationPrincipal User authenticatedUser) {
         EmployeeDTO createdEmployee = employeeService.createEmployee(employeeDTO, authenticatedUser);
         return ResponseEntity.status(HttpStatus.CREATED).body(createdEmployee);
     }
 
     @GetMapping("/{id}")
     @Operation(summary = "Gets an employee", description = "Retrieves the details of an employee by their ID")
-    public ResponseEntity<EmployeeDTO> getEmployee(@PathVariable Long id) {
-        EmployeeDTO employeeDTO = employeeService.getEmployee(id);
+    public ResponseEntity<EmployeeDTO> getEmployee(
+            @PathVariable Long id,
+            @AuthenticationPrincipal User authenticatedUser) {
+        EmployeeDTO employeeDTO = employeeService.getEmployee(id, authenticatedUser);
         return new ResponseEntity<>(employeeDTO, HttpStatus.OK);
     }
 
     @GetMapping
     @Operation(summary = "Gets all employees", description = "Retrieves a list of all employees")
-    public ResponseEntity<List<EmployeeDTO>> getAllEmployees() {
-        List<EmployeeDTO> employees = employeeService.getAllEmployees();
+    public ResponseEntity<List<EmployeeDTO>> getAllEmployees(
+            @AuthenticationPrincipal User authenticatedUser) {
+        List<EmployeeDTO> employees = employeeService.getAllEmployees(authenticatedUser);
         return ResponseEntity.ok(employees);
     }
 
     @PutMapping("/{id}")
     @Operation(summary = "Updates an employee", description = "Updates the details of an existing employee by their ID")
-    public ResponseEntity<EmployeeDTO> updateEmployee(@PathVariable Long id,
-                                                      @RequestBody EmployeeDTO employeeDTO) {
-        EmployeeDTO updatedEmployeeDTO = employeeService.updateEmployee(id, employeeDTO);
+    public ResponseEntity<EmployeeDTO> updateEmployee(
+            @PathVariable Long id,
+            @RequestBody EmployeeDTO employeeDTO,
+            @AuthenticationPrincipal User authenticatedUser) {
+        EmployeeDTO updatedEmployeeDTO = employeeService.updateEmployee(id, employeeDTO, authenticatedUser);
         return new ResponseEntity<>(updatedEmployeeDTO, HttpStatus.OK);
     }
 
     @DeleteMapping("/{id}")
     @Operation(summary = "Deletes an employee", description = "Deletes an employee by their ID")
-    public ResponseEntity<Void> deleteEmployee(@PathVariable Long id) {
-        employeeService.deleteEmployee(id);
+    public ResponseEntity<Void> deleteEmployee(
+            @PathVariable Long id,
+            @AuthenticationPrincipal User authenticatedUser) {
+        employeeService.deleteEmployee(id, authenticatedUser);
         return ResponseEntity.noContent().build();
     }
 
@@ -64,8 +72,9 @@ public class EmployeeController {
     @Operation(summary = "Find employees by name", description = "Retrieves employees by their first and/or last name")
     public ResponseEntity<List<EmployeeDTO>> findEmployeesByName(
             @RequestParam(required = false) String firstName,
-            @RequestParam(required = false) String lastName) {
-        List<EmployeeDTO> employees = employeeService.findEmployeesByName(firstName, lastName);
+            @RequestParam(required = false) String lastName,
+            @AuthenticationPrincipal User authenticatedUser) {
+        List<EmployeeDTO> employees = employeeService.findEmployeesByName(firstName, lastName, authenticatedUser);
         return ResponseEntity.ok(employees);
     }
 
@@ -73,8 +82,9 @@ public class EmployeeController {
     @Operation(summary = "Get employees sorted by gross salary",
             description = "Retrieves employees sorted by gross salary in ascending or descending order")
     public ResponseEntity<List<EmployeeDTO>> getEmployeesSortedBySalary(
-            @RequestParam(defaultValue = "asc") String order) {
-        List<EmployeeDTO> sortedEmployees = employeeService.getEmployeesSortedBySalary(order);
+            @RequestParam(defaultValue = "asc") String order,
+            @AuthenticationPrincipal User authenticatedUser) {
+        List<EmployeeDTO> sortedEmployees = employeeService.getEmployeesSortedBySalary(order, authenticatedUser);
         return ResponseEntity.ok(sortedEmployees);
     }
 }

@@ -1,5 +1,6 @@
 package osu.contract.model;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -8,6 +9,7 @@ import jakarta.validation.constraints.Size;
 import lombok.*;
 import org.hibernate.proxy.HibernateProxy;
 import osu.project.model.Project;
+import osu.user.model.User;
 
 import java.util.Date;
 import java.util.Objects;
@@ -15,7 +17,6 @@ import java.util.Objects;
 @Entity
 @Getter
 @Setter
-@ToString(exclude = "project")
 @RequiredArgsConstructor
 public class Contract {
 
@@ -55,6 +56,7 @@ public class Contract {
 
     @ManyToOne
     @JoinColumn(name = "project_id")
+    @ToString.Exclude
     private Project project;
 
     @PrePersist
@@ -69,6 +71,12 @@ public class Contract {
         this.project = project;
         synchronizeOrderName();
     }
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "created_by")
+    @JsonManagedReference
+    @ToString.Exclude
+    private User createdBy;
 
     @Override
     public final boolean equals(Object o) {
