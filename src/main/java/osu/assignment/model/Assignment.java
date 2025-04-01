@@ -8,6 +8,7 @@ import osu.performanceBonus.model.PerformanceBonus;
 import osu.position.model.Position;
 import osu.tariff.model.Tariff;
 import java.time.LocalDate;
+import java.util.HashSet;
 import java.util.Set;
 
 @Entity
@@ -33,7 +34,7 @@ public class Assignment {
     private Tariff tariff;
 
     @OneToMany(mappedBy = "assignment", cascade = CascadeType.ALL, orphanRemoval = true)
-    private Set<PerformanceBonus> performanceBonuses;
+    private Set<PerformanceBonus> performanceBonuses = new HashSet<>();
 
     private LocalDate startDate;
 
