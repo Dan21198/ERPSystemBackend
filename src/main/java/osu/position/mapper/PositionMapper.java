@@ -14,12 +14,12 @@ public interface PositionMapper {
 
     @Mapping(target = "durationInMonths", ignore = true)
     @Mapping(target = "fte", ignore = true)
-    @Mapping(target = "project.id", source = "projectId")
+    @Mapping(target = "project", ignore = true)
     Position toEntity(PositionDTO positionDTO);
 
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "durationInMonths", ignore = true)
     @Mapping(target = "fte", ignore = true)
-    @Mapping(target = "project.id", source = "projectId")
+    @Mapping(target = "project", ignore = true)
     void updateEntityFromDto(PositionDTO positionDTO, @MappingTarget Position position);
 }

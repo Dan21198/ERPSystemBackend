@@ -11,6 +11,8 @@ import osu.position.mapper.PositionMapper;
 import osu.position.model.Position;
 import osu.position.model.PositionDTO;
 import osu.position.repository.PositionRepository;
+import osu.project.model.Project;
+import osu.project.repository.ProjectRepository;
 import osu.user.model.User;
 
 import java.util.List;
@@ -23,18 +25,28 @@ public class PositionServiceImpl implements PositionService {
     private final PositionRepository positionRepository;
     private final PositionMapper positionMapper;
     private final EmployeeMapper employeeMapper;
+    private final ProjectRepository projectRepository;
 
     @Autowired
     public PositionServiceImpl(PositionRepository positionRepository,
-                               PositionMapper positionMapper, EmployeeMapper employeeMapper) {
+                               PositionMapper positionMapper, EmployeeMapper employeeMapper, ProjectRepository projectRepository) {
         this.positionRepository = positionRepository;
         this.positionMapper = positionMapper;
         this.employeeMapper = employeeMapper;
+        this.projectRepository = projectRepository;
     }
 
     @Override
+    @Transactional
     public PositionDTO createPosition(PositionDTO positionDTO, User authenticatedUser) {
         Position position = positionMapper.toEntity(positionDTO);
+
+        if (positionDTO.getProjectId() != null) {
+            Project project = projectRepository.findById(positionDTO.getProjectId())
+                    .orElseThrow(() -> new RecordNotFoundException("Project not found with id: " + positionDTO.getProjectId()));
+            position.setProject(project);
+        }
+
         position.setCreatedBy(authenticatedUser);
         Position savedPosition = positionRepository.save(position);
         return positionMapper.toDto(savedPosition);
