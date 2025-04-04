@@ -46,6 +46,7 @@ public class PerformanceBonusServiceImpl implements PerformanceBonusService {
         PerformanceBonus savedBonus = performanceBonusRepository.save(bonus);
 
         updateEmployeeSalaryIfNeeded(assignment);
+        updatePositionTotalAmount(assignment);
 
         return performanceBonusMapper.toDto(savedBonus);
     }
@@ -75,6 +76,13 @@ public class PerformanceBonusServiceImpl implements PerformanceBonusService {
 
         performanceBonusRepository.delete(bonus);
         updateEmployeeSalaryIfNeeded(assignment);
+        updatePositionTotalAmount(assignment);
+    }
+
+    private void updatePositionTotalAmount(Assignment assignment) {
+        if (assignment.getPosition() != null) {
+            assignment.getPosition().updateTotalAmountSpent();
+        }
     }
 
     @Override
@@ -101,7 +109,7 @@ public class PerformanceBonusServiceImpl implements PerformanceBonusService {
     }
 
     private void verifyAssignmentAccess(Assignment assignment, User authenticatedUser) {
-        if (!assignment.getCreatedBy().equals(authenticatedUser)) {
+        if (!assignment.getCreatedBy().getId().equals(authenticatedUser.getId())) {
             throw new SecurityException("You don't have access to this assignment");
         }
     }

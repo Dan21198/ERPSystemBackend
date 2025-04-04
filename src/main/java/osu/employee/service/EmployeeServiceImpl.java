@@ -15,6 +15,7 @@ import osu.exception.RecordNotFoundException;
 import osu.user.model.User;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -59,11 +60,12 @@ public class EmployeeServiceImpl implements EmployeeService {
     }
 
     @Override
+    @Transactional
     public EmployeeDTO getEmployee(Long personalNumber, User authenticatedUser) {
         Employee employee = employeeRepository.findById(personalNumber)
                 .orElseThrow(() -> new RecordNotFoundException("Employee not found"));
 
-        if (!employee.getCreatedBy().equals(authenticatedUser)) {
+        if (!Objects.equals(employee.getCreatedBy().getId(), authenticatedUser.getId())) {
             throw new SecurityException("Unauthorized access to employee data");
         }
 

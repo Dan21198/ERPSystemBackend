@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import osu.employee.model.Employee;
 import osu.employee.repository.EmployeeRepository;
+import osu.position.model.Position;
 import osu.position.repository.PositionRepository;
 import osu.tariff.repository.TariffRepository;
 import osu.user.model.User;
@@ -135,6 +136,10 @@ public class AssignmentServiceImpl implements AssignmentService {
 
         Assignment createdAssignment = assignmentRepository.save(assignment);
 
+        Position position = assignment.getPosition();
+        position.updateTotalAmountSpent();
+        positionRepository.save(position);
+
         assignment.getEmployee().calculateGrossSalary();
         employeeRepository.save(assignment.getEmployee());
 
@@ -142,6 +147,7 @@ public class AssignmentServiceImpl implements AssignmentService {
     }
 
     @Override
+    @Transactional
     public AssignmentDTO deactivateAssignment(Long id, User authenticatedUser) {
         Assignment assignment = assignmentRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Assignment not found"));
@@ -153,6 +159,10 @@ public class AssignmentServiceImpl implements AssignmentService {
         assignment.setEndDate(LocalDate.now());
         assignment.setActive(false);
         Assignment updatedAssignment = assignmentRepository.save(assignment);
+
+        Position position = assignment.getPosition();
+        position.updateTotalAmountSpent();
+        positionRepository.save(position);
 
         Employee employee = assignment.getEmployee();
         employee.calculateGrossSalary();

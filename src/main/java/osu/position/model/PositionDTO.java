@@ -36,4 +36,6 @@ public class PositionDTO {
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     private Double fte;
 
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
+    private Double totalAmountSpent;
 }
