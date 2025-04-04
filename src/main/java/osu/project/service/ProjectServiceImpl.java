@@ -7,6 +7,8 @@ import org.hibernate.Hibernate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import osu.assignment.model.Assignment;
+import osu.contract.model.Contract;
+import osu.contract.repository.ContractRepository;
 import osu.employee.mapper.EmployeeMapper;
 import osu.employee.model.Employee;
 import osu.employee.model.EmployeeDTO;
@@ -33,15 +35,17 @@ public class ProjectServiceImpl implements ProjectService {
     private final PositionRepository positionRepository;
     private final ProjectMapper projectMapper;
     private final EmployeeMapper employeeMapper;
+    private final ContractRepository contractRepository;
     private static final Logger logger = LoggerFactory.getLogger(ProjectServiceImpl.class);
 
     @Autowired
     public ProjectServiceImpl(ProjectRepository projectRepository, PositionRepository positionRepository,
-                              ProjectMapper projectMapper, EmployeeMapper employeeMapper) {
+                              ProjectMapper projectMapper, EmployeeMapper employeeMapper, ContractRepository contractRepository) {
         this.projectRepository = projectRepository;
         this.positionRepository = positionRepository;
         this.projectMapper = projectMapper;
         this.employeeMapper = employeeMapper;
+        this.contractRepository = contractRepository;
     }
 
     @PersistenceContext
@@ -61,21 +65,13 @@ public class ProjectServiceImpl implements ProjectService {
         project.getUsers().add(managedUser);
 
         Project savedProject = projectRepository.save(project);
-
         return projectMapper.toDto(savedProject);
     }
-
 
     @Override
     @Transactional
     public ProjectDTO updateProject(Long projectId, ProjectDTO projectDTO, User authenticatedUser) {
-        Project existingProject = projectRepository.findById(projectId)
-                .orElseThrow(() -> new RecordNotFoundException(
-                        "Project with ID " + projectId + " not found"));
-
-        if (isProjectOwnedByUser(existingProject, authenticatedUser)) {
-            throw new RecordNotFoundException("Project not found or unauthorized access");
-        }
+        Project existingProject = getValidatedProject(projectId, authenticatedUser);
 
         try {
             projectMapper.updateProjectFromDto(projectDTO, existingProject);
@@ -94,13 +90,7 @@ public class ProjectServiceImpl implements ProjectService {
 
     @Override
     public void deleteProject(Long projectId, User authenticatedUser) {
-        Project projectToDelete = projectRepository.findById(projectId)
-                .orElseThrow(() -> new RecordNotFoundException("Project with ID " + projectId + " not found"));
-
-        if (isProjectOwnedByUser(projectToDelete, authenticatedUser)) {
-            throw new RecordNotFoundException("Project not found or unauthorized access");
-        }
-
+        Project projectToDelete = getValidatedProject(projectId, authenticatedUser);
         projectRepository.delete(projectToDelete);
     }
 
@@ -126,19 +116,9 @@ public class ProjectServiceImpl implements ProjectService {
     @Override
     @Transactional
     public List<EmployeeDTO> getAllEmployeesOnProject(Long projectId, User authenticatedUser) {
-        User managedUser = entityManager.merge(authenticatedUser);
-
-        Project project = projectRepository.findById(projectId)
-                .orElseThrow(() -> new RecordNotFoundException("Project not found with id: " + projectId));
-
-        Hibernate.initialize(managedUser.getProjects());
-
-        if (!managedUser.getProjects().contains(project)) {
-            throw new RecordNotFoundException("Unauthorized access to project");
-        }
+        Project project = getValidatedProject(projectId, authenticatedUser);
 
         Set<Position> positions = project.getPositions();
-
         Set<Employee> employees = positions.stream()
                 .flatMap(position -> position.getAssignments().stream())
                 .map(Assignment::getEmployee)
@@ -163,9 +143,8 @@ public class ProjectServiceImpl implements ProjectService {
     @Override
     @Transactional
     public ProjectDTO addPositionToProject(Long projectId, Long positionId, User authenticatedUser) {
-        Map<String, Object> result = validateAndGetProjectAndPosition(projectId, positionId, authenticatedUser);
-        Project project = (Project) result.get("project");
-        Position position = (Position) result.get("position");
+        Project project = getValidatedProject(projectId, authenticatedUser);
+        Position position = getPositionById(positionId);
 
         project.getPositions().add(position);
         position.setProject(project);
@@ -177,9 +156,8 @@ public class ProjectServiceImpl implements ProjectService {
     @Override
     @Transactional
     public ProjectDTO removePositionFromProject(Long projectId, Long positionId, User authenticatedUser) {
-        Map<String, Object> result = validateAndGetProjectAndPosition(projectId, positionId, authenticatedUser);
-        Project project = (Project) result.get("project");
-        Position position = (Position) result.get("position");
+        Project project = getValidatedProject(projectId, authenticatedUser);
+        Position position = getPositionById(positionId);
 
         project.getPositions().remove(position);
         position.setProject(null);
@@ -188,24 +166,32 @@ public class ProjectServiceImpl implements ProjectService {
         return projectMapper.toDto(updatedProject);
     }
 
-    private Map<String, Object> validateAndGetProjectAndPosition(Long projectId, Long positionId, User authenticatedUser) {
-        User managedUser = entityManager.merge(authenticatedUser);
-        Hibernate.initialize(managedUser.getProjects());
+    @Override
+    @Transactional
+    public ProjectDTO addContractToProject(Long projectId, Long contractId, User authenticatedUser) {
+        Project project = getValidatedProject(projectId, authenticatedUser);
+        Contract contract = getContractById(contractId);
 
-        Project project = projectRepository.findById(projectId)
-                .orElseThrow(() -> new RecordNotFoundException("Project not found with id: " + projectId));
+        contract.setProject(project);
+        project.getContracts().add(contract);
+        project.updateTotalAmountAllocated();
 
-        if (!managedUser.getProjects().contains(project)) {
-            throw new RecordNotFoundException("Unauthorized access to project");
-        }
+        Project updatedProject = projectRepository.save(project);
+        return projectMapper.toDto(updatedProject);
+    }
 
-        Position position = positionRepository.findById(positionId)
-                .orElseThrow(() -> new RecordNotFoundException("Position not found with id: " + positionId));
+    @Override
+    @Transactional
+    public ProjectDTO removeContractFromProject(Long projectId, Long contractId, User authenticatedUser) {
+        Project project = getValidatedProject(projectId, authenticatedUser);
+        Contract contract = getContractById(contractId);
 
-        Map<String, Object> result = new HashMap<>();
-        result.put("project", project);
-        result.put("position", position);
-        return result;
+        project.getContracts().remove(contract);
+        contract.setProject(null);
+        project.updateTotalAmountAllocated();
+
+        Project updatedProject = projectRepository.save(project);
+        return projectMapper.toDto(updatedProject);
     }
 
     @Override
@@ -261,6 +247,29 @@ public class ProjectServiceImpl implements ProjectService {
                 .collect(Collectors.toList());
     }
 
+    private Project getValidatedProject(Long projectId, User authenticatedUser) {
+        User managedUser = entityManager.merge(authenticatedUser);
+        Hibernate.initialize(managedUser.getProjects());
+
+        Project project = projectRepository.findById(projectId)
+                .orElseThrow(() -> new RecordNotFoundException("Project not found with id: " + projectId));
+
+        if (!project.getUsers().contains(managedUser)) {
+            throw new RecordNotFoundException("Unauthorized access to project");
+        }
+        return project;
+    }
+
+    private Position getPositionById(Long positionId) {
+        return positionRepository.findById(positionId)
+                .orElseThrow(() -> new RecordNotFoundException("Position not found with id: " + positionId));
+    }
+
+    private Contract getContractById(Long contractId) {
+        return contractRepository.findById(contractId)
+                .orElseThrow(() -> new RecordNotFoundException("Contract not found with id: " + contractId));
+    }
+
     private void fetchAndSetPositions(ProjectDTO projectDTO, Project existingProject) {
         if (projectDTO.getPositions() != null && !projectDTO.getPositions().isEmpty()) {
             Set<Position> newPositions = projectDTO.getPositions().stream()
@@ -281,11 +290,5 @@ public class ProjectServiceImpl implements ProjectService {
         } else {
             return ProjectStatus.COMPLETED;
         }
-    }
-
-    private boolean isProjectOwnedByUser(Project project, User user) {
-        User managedUser = entityManager.merge(user);
-        Hibernate.initialize(managedUser.getProjects());
-        return !project.getUsers().contains(managedUser);
     }
 }

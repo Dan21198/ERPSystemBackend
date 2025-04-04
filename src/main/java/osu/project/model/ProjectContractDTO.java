@@ -18,5 +18,7 @@ public class ProjectContractDTO {
     ProjectStatus projectStatus;
     Date projectStart;
     Date projectEnd;
+    Double totalAmountSpent;
+    Double totalAmountAllocated;
     Set<ContractDTO> contracts;
 }

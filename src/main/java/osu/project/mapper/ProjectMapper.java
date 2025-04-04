@@ -23,5 +23,7 @@ public interface ProjectMapper {
 
     @Mapping(source = "id", target = "projectId")
     @Mapping(source = "contracts", target = "contracts")
+    @Mapping(source = "totalAmountSpent", target = "totalAmountSpent")
+    @Mapping(source = "totalAmountAllocated", target = "totalAmountAllocated")
     ProjectContractDTO toProjectContractDto(Project project);
 }

@@ -116,6 +116,39 @@ public class ProjectController {
         return new ResponseEntity<>(updatedProject, HttpStatus.OK);
     }
 
+    @PostMapping("/{projectId}/contracts/{contractId}")
+    @Operation(summary = "Add a contract to the project",
+            description = "Assigns an existing contract to the project")
+    public ResponseEntity<ProjectDTO> addContractToProject(
+            @PathVariable Long projectId,
+            @PathVariable Long contractId,
+            @AuthenticationPrincipal User authenticatedUser) {
+        ProjectDTO updatedProject = projectService.addContractToProject(projectId, contractId, authenticatedUser);
+        return new ResponseEntity<>(updatedProject, HttpStatus.OK);
+    }
+
+    @DeleteMapping("/{projectId}/contracts/{contractId}")
+    @Operation(summary = "Remove a contract from the project",
+            description = "Removes a contract from the project")
+    public ResponseEntity<ProjectDTO> removeContractFromProject(
+            @PathVariable Long projectId,
+            @PathVariable Long contractId,
+            @AuthenticationPrincipal User authenticatedUser) {
+        ProjectDTO updatedProject = projectService.removeContractFromProject(projectId, contractId, authenticatedUser);
+        return new ResponseEntity<>(updatedProject, HttpStatus.OK);
+    }
+
+    @GetMapping("/{id}/with-contracts")
+    @Operation(summary = "Get a project with contracts",
+            description = "Loads a project with all its assigned contracts")
+    public ResponseEntity<ProjectContractDTO> getProjectWithContractsAlternative(
+            @PathVariable Long id,
+            @AuthenticationPrincipal User authenticatedUser) {
+        ProjectContractDTO projectContractDTO = projectService.getProjectWithContracts(id, authenticatedUser)
+                .orElseThrow(() -> new RecordNotFoundException("Project not found"));
+        return new ResponseEntity<>(projectContractDTO, HttpStatus.OK);
+    }
+
     @GetMapping("/search/code/{projectCode}")
     @Operation(summary = "Gets projects by code",
             description = "Retrieves projects by their project code")

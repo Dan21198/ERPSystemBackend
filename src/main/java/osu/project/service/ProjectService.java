@@ -40,4 +40,8 @@ public interface ProjectService {
     ProjectDTO addPositionToProject(Long projectId, Long positionId, User authenticatedUser);
 
     ProjectDTO removePositionFromProject(Long projectId, Long positionId, User authenticatedUser);
+
+    ProjectDTO addContractToProject(Long projectId, Long contractId, User authenticatedUser);
+
+    ProjectDTO removeContractFromProject(Long projectId, Long contractId, User authenticatedUser);
 }

@@ -38,4 +38,15 @@ public class ProjectStatusUpdateService {
             projectRepository.save(project);
         }
     }
+
+    @Scheduled(cron = "0 0 0 * * ?") // Runs every day at midnight
+    @Transactional
+    public void updateProjectTotalAmountSpent() {
+        List<Project> projects = projectRepository.findAll();
+
+        for (Project project : projects) {
+            project.updateTotalAmountSpent();
+            projectRepository.save(project);
+        }
+    }
 }

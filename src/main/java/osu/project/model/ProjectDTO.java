@@ -35,6 +35,12 @@ public class ProjectDTO {
     @NotNull(message = "Project end date cannot be null")
     private Date projectEnd;
 
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
+    private Double totalAmountSpent;
+
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
+    private Double totalAmountAllocated;
+
     private Set<PositionDTO> positions;
     private Set<UserDto> users;
 }

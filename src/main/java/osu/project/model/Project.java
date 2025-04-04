@@ -42,6 +42,38 @@ public class Project {
 
     private Date projectEnd;
 
+    private Double totalAmountSpent = 0.0;
+
+    public Double getTotalAmountSpent() {
+        if (this.positions == null || this.positions.isEmpty()) {
+            return 0.0;
+        }
+
+        return this.positions.stream()
+                .mapToDouble(Position::getTotalAmountSpent)
+                .sum();
+    }
+
+    public void updateTotalAmountSpent() {
+        this.totalAmountSpent = getTotalAmountSpent();
+    }
+
+    private Double totalAmountAllocated = 0.0;
+
+    public Double getTotalAmountAllocated() {
+        if (this.contracts == null || this.contracts.isEmpty()) {
+            return 0.0;
+        }
+
+        return this.contracts.stream()
+                .mapToDouble(Contract::getAvailableAmount)
+                .sum();
+    }
+
+    public void updateTotalAmountAllocated() {
+        this.totalAmountAllocated = getTotalAmountAllocated();
+    }
+
     @OneToMany(mappedBy = "project", cascade = CascadeType.ALL)
     @JsonManagedReference
     @ToString.Exclude
@@ -55,7 +87,7 @@ public class Project {
         }
     }
 
-    @OneToMany(mappedBy = "project", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "project", cascade = CascadeType.ALL)
     @JsonManagedReference
     @ToString.Exclude
     private Set<Contract> contracts = new HashSet<>();
