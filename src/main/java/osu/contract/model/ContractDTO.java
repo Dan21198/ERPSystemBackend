@@ -11,7 +11,7 @@ import java.util.Date;
 @Data
 public class ContractDTO {
 
-    private String id;
+    private Long id;
 
     @NotBlank(message = "Order number cannot be blank")
     @Size(max = 50, message = "Order number must not exceed 50 characters")
@@ -43,5 +43,5 @@ public class ContractDTO {
     @NotNull(message = "Duration end date is required")
     private Date durationTo;
 
-    private String projectId;
+    private Long projectId;
 }
