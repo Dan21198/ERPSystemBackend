@@ -10,6 +10,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
+import lombok.ToString;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import osu.employee.model.Employee;
@@ -34,6 +35,7 @@ public class User implements UserDetails{
 
     @ManyToMany(mappedBy = "users", fetch = FetchType.LAZY)
     @JsonIgnore
+    @ToString.Exclude
     private Set<Project> projects;
 
     @JsonBackReference

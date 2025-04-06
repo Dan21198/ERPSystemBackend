@@ -1,5 +1,6 @@
 package osu.project.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
@@ -50,7 +51,11 @@ public class Project {
         }
 
         return this.positions.stream()
-                .mapToDouble(Position::getTotalAmountSpent)
+                .filter(Objects::nonNull)
+                .mapToDouble(position -> {
+                    Double amount = position.getTotalAmountSpent();
+                    return amount != null ? amount : 0.0;
+                })
                 .sum();
     }
 
@@ -109,6 +114,8 @@ public class Project {
             joinColumns = @JoinColumn(name = "project_id"),
             inverseJoinColumns = @JoinColumn(name = "user_id")
     )
+    @JsonIgnoreProperties("projects")
+    @ToString.Exclude
     private Set<User> users;
 
     @Override

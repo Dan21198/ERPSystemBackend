@@ -31,6 +31,7 @@ public class Position {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "project_id")
+    @ToString.Exclude
     private Project project;
 
     private LocalDate startDate;

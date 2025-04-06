@@ -41,6 +41,8 @@ public class ProjectDTO {
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     private Double totalAmountAllocated;
 
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     private Set<PositionDTO> positions;
+
     private Set<UserDto> users;
 }
