@@ -10,12 +10,12 @@ import osu.position.repository.PositionRepository;
 import java.util.List;
 
 @Service
-public class ProjectStatusUpdateService {
+public class PositionStatusUpdateService {
 
     private final PositionRepository positionRepository;
 
     @Autowired
-    public ProjectStatusUpdateService(PositionRepository positionRepository) {
+    public PositionStatusUpdateService(PositionRepository positionRepository) {
         this.positionRepository = positionRepository;
     }
 
