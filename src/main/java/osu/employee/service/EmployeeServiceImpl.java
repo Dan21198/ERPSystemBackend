@@ -43,17 +43,21 @@ public class EmployeeServiceImpl implements EmployeeService {
         employee.setCreatedBy(authenticatedUser);
 
         Employee savedEmployee = employeeRepository.save(employee);
+        final Employee finalEmployee = savedEmployee;
 
-        // Handle assignments if provided
         if (employeeDTO.getAssignments() != null) {
             Set<Assignment> assignments = employeeDTO.getAssignments().stream()
                     .map(assignmentDTO -> {
                         Assignment assignment = employeeMapper.toAssignmentEntity(assignmentDTO);
-                        assignment.setEmployee(savedEmployee);
+                        assignment.setEmployee(finalEmployee);
                         return assignment;
                     })
                     .collect(Collectors.toSet());
             assignmentRepository.saveAll(assignments);
+
+            finalEmployee.calculateGrossSalary();
+            finalEmployee.updateContractExpirationStatus();
+            savedEmployee = employeeRepository.save(finalEmployee);
         }
 
         return employeeMapper.toDto(savedEmployee);
@@ -108,6 +112,7 @@ public class EmployeeServiceImpl implements EmployeeService {
             }
 
             existingEmployee.calculateGrossSalary();
+            existingEmployee.updateContractExpirationStatus();
 
             Employee updatedEmployee = employeeRepository.save(existingEmployee);
             return employeeMapper.toDto(updatedEmployee);

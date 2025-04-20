@@ -9,6 +9,7 @@ import osu.assignment.model.Assignment;
 import osu.performanceBonus.model.PerformanceBonus;
 import osu.user.model.User;
 
+import java.time.LocalDate;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Objects;
@@ -57,6 +58,9 @@ public class Employee {
     @ToString.Exclude
     private Set<Assignment> assignments = new HashSet<>();
 
+    @Column(nullable = false, columnDefinition = "boolean default false")
+    private boolean contractAboutToExpire;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "created_by")
     @JsonManagedReference
@@ -65,10 +69,28 @@ public class Employee {
 
     @PrePersist
     @PreUpdate
+    public void updateEmployeeState() {
+        calculateGrossSalary();
+        updateContractExpirationStatus();
+    }
+
     public void calculateGrossSalary() {
         double tariffAmount = getCurrentTariffAmount();
         double activeBonuses = getActivePerformanceBonuses();
         this.grossSalary = tariffAmount + activeBonuses;
+    }
+
+    public void updateContractExpirationStatus() {
+        if (contractEnd != null) {
+            LocalDate today = LocalDate.now();
+            LocalDate endDate = new java.sql.Date(contractEnd.getTime()).toLocalDate();
+            LocalDate oneMonthBefore = endDate.minusMonths(1);
+
+            // Contract is about to expire if today is between one month before and end date
+            this.contractAboutToExpire = !today.isBefore(oneMonthBefore) && !today.isAfter(endDate);
+        } else {
+            this.contractAboutToExpire = false;
+        }
     }
 
     public Double getCurrentTariffAmount() {

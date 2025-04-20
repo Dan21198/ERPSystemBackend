@@ -15,6 +15,8 @@ public interface EmployeeMapper {
     @Mapping(target = "assignments", source = "assignments", qualifiedByName = "mapAssignmentsToDTOs")
     @Mapping(target = "wageClass", source = "employee", qualifiedByName = "mapWageClass")
     @Mapping(target = "tariffAmount", source = "employee", qualifiedByName = "mapTariffAmount")
+    @Mapping(target = "grossSalary", source = "grossSalary")
+    @Mapping(target = "contractAboutToExpire", source = "contractAboutToExpire")
     EmployeeDTO toDto(Employee employee);
 
     @Mapping(target = "assignments", source = "assignments", qualifiedByName = "mapDTOsToAssignments")
@@ -22,6 +24,7 @@ public interface EmployeeMapper {
 
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "assignments", source = "assignments", qualifiedByName = "mapDTOsToAssignments")
+    @Mapping(target = "contractAboutToExpire", ignore = true)
     void updateEmployeeFromDto(EmployeeDTO employeeDTO, @MappingTarget Employee employee);
 
     @Named("mapAssignmentsToDTOs")

@@ -53,6 +53,9 @@ public class EmployeeDTO {
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     private Double grossSalary;
 
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
+    private boolean contractAboutToExpire;
+
     private Set<AssignmentDTO> assignments;
     private UserDto createdBy;
 }
