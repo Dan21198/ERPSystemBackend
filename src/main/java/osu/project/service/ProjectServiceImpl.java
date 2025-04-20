@@ -54,8 +54,9 @@ public class ProjectServiceImpl implements ProjectService {
     @Override
     @Transactional
     public ProjectDTO createProject(ProjectDTO projectDTO, User authenticatedUser) {
+        validateProjectDates(projectDTO);
+
         Project project = projectMapper.toEntity(projectDTO);
-        project.setProjectStatus(determineProjectStatus(project.getProjectStart(), project.getProjectEnd()));
 
         if (project.getUsers() == null) {
             project.setUsers(new HashSet<>());
@@ -73,11 +74,10 @@ public class ProjectServiceImpl implements ProjectService {
     public ProjectDTO updateProject(Long projectId, ProjectDTO projectDTO, User authenticatedUser) {
         Project existingProject = getValidatedProject(projectId, authenticatedUser);
 
+        validateProjectDates(projectDTO);
+
         try {
             projectMapper.updateProjectFromDto(projectDTO, existingProject);
-            existingProject.setProjectStatus(determineProjectStatus(existingProject.getProjectStart(),
-                    existingProject.getProjectEnd()));
-
             fetchAndSetPositions(projectDTO, existingProject);
 
             Project updatedProject = projectRepository.save(existingProject);
@@ -281,14 +281,14 @@ public class ProjectServiceImpl implements ProjectService {
         }
     }
 
-    private ProjectStatus determineProjectStatus(Date projectStart, Date projectEnd) {
-        Date currentDate = new Date();
-        if (currentDate.before(projectStart)) {
-            return ProjectStatus.NOT_STARTED;
-        } else if (currentDate.after(projectStart) && currentDate.before(projectEnd)) {
-            return ProjectStatus.IN_PROGRESS;
-        } else {
-            return ProjectStatus.COMPLETED;
+    private void validateProjectDates(ProjectDTO projectDTO) {
+        if (!Objects.equals(projectDTO.getProjectStatus(), ProjectStatus.SUSTAINABILITY.toString())) {
+            if (projectDTO.getProjectStart() == null) {
+                throw new IllegalArgumentException("Project start date is required for status: " + projectDTO.getProjectStatus());
+            }
+            if (projectDTO.getProjectEnd() == null) {
+                throw new IllegalArgumentException("Project end date is required for status: " + projectDTO.getProjectStatus());
+            }
         }
     }
 }

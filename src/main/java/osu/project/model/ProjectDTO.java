@@ -26,13 +26,10 @@ public class ProjectDTO {
     @Size(max = 100, message = "Project name must not exceed 100 characters")
     private String projectName;
 
-    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     private String projectStatus;
 
-    @NotNull(message = "Project start date cannot be null")
     private Date projectStart;
 
-    @NotNull(message = "Project end date cannot be null")
     private Date projectEnd;
 
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)

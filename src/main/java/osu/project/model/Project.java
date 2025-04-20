@@ -38,7 +38,6 @@ public class Project {
     @Enumerated(EnumType.STRING)
     private ProjectStatus projectStatus;
 
-    @NotNull(message = "Project start date must not be null")
     private Date projectStart;
 
     private Date projectEnd;
