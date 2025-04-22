@@ -5,31 +5,34 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import osu.assignment.model.Assignment;
 import osu.assignment.repository.AssignmentRepository;
-import osu.employee.repository.EmployeeRepository;
+import osu.employee.service.EmployeeSalaryUpdater;
 import osu.performanceBonus.model.PerformanceBonus;
 import osu.performanceBonus.model.PerformanceBonusDTO;
 import osu.performanceBonus.mapper.PerformanceBonusMapper;
 import osu.performanceBonus.repository.PerformanceBonusRepository;
 import osu.exception.RecordNotFoundException;
+import osu.position.repository.PositionRepository;
 import osu.user.model.User;
 
 @Service
 public class PerformanceBonusServiceImpl implements PerformanceBonusService {
-
     private final AssignmentRepository assignmentRepository;
     private final PerformanceBonusRepository performanceBonusRepository;
     private final PerformanceBonusMapper performanceBonusMapper;
-    private final EmployeeRepository employeeRepository;
+    private final EmployeeSalaryUpdater salaryUpdater;
+    private final PositionRepository positionRepository;
 
     @Autowired
     public PerformanceBonusServiceImpl(AssignmentRepository assignmentRepository,
                                        PerformanceBonusRepository performanceBonusRepository,
                                        PerformanceBonusMapper performanceBonusMapper,
-                                       EmployeeRepository employeeRepository) {
+                                       EmployeeSalaryUpdater salaryUpdater,
+                                       PositionRepository positionRepository) {
         this.assignmentRepository = assignmentRepository;
         this.performanceBonusRepository = performanceBonusRepository;
         this.performanceBonusMapper = performanceBonusMapper;
-        this.employeeRepository = employeeRepository;
+        this.salaryUpdater = salaryUpdater;
+        this.positionRepository = positionRepository;
     }
 
     @Override
@@ -45,8 +48,7 @@ public class PerformanceBonusServiceImpl implements PerformanceBonusService {
         bonus.setCreatedBy(authenticatedUser);
         PerformanceBonus savedBonus = performanceBonusRepository.save(bonus);
 
-        updateEmployeeSalaryIfNeeded(assignment);
-        updatePositionTotalAmount(assignment);
+        updateEmployeeAndPosition(assignment);
 
         return performanceBonusMapper.toDto(savedBonus);
     }
@@ -70,19 +72,8 @@ public class PerformanceBonusServiceImpl implements PerformanceBonusService {
             throw new SecurityException("You can only delete bonuses you created");
         }
 
-        if (assignment.getPerformanceBonuses() != null) {
-            assignment.getPerformanceBonuses().remove(bonus);
-        }
-
         performanceBonusRepository.delete(bonus);
-        updateEmployeeSalaryIfNeeded(assignment);
-        updatePositionTotalAmount(assignment);
-    }
-
-    private void updatePositionTotalAmount(Assignment assignment) {
-        if (assignment.getPosition() != null) {
-            assignment.getPosition().updateTotalAmountSpent();
-        }
+        updateEmployeeAndPosition(assignment);
     }
 
     @Override
@@ -103,7 +94,7 @@ public class PerformanceBonusServiceImpl implements PerformanceBonusService {
         performanceBonusMapper.updateBonusFromDto(bonusDTO, existingBonus);
         PerformanceBonus updatedBonus = performanceBonusRepository.save(existingBonus);
 
-        updateEmployeeSalaryIfNeeded(assignment);
+        updateEmployeeAndPosition(assignment);
 
         return performanceBonusMapper.toDto(updatedBonus);
     }
@@ -114,11 +105,14 @@ public class PerformanceBonusServiceImpl implements PerformanceBonusService {
         }
     }
 
-
-    private void updateEmployeeSalaryIfNeeded(Assignment assignment) {
+    private void updateEmployeeAndPosition(Assignment assignment) {
         if (assignment.getEmployee() != null) {
-            assignment.getEmployee().calculateGrossSalary();
-            employeeRepository.save(assignment.getEmployee());
+            salaryUpdater.updateEmployeeSalary(assignment.getEmployee());
+        }
+
+        if (assignment.getPosition() != null) {
+            assignment.getPosition().updateTotalAmountSpent();
+            positionRepository.save(assignment.getPosition());
         }
     }
 }

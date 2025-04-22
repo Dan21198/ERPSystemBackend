@@ -25,15 +25,18 @@ public class EmployeeServiceImpl implements EmployeeService {
     private final EmployeeRepository employeeRepository;
     private final AssignmentRepository assignmentRepository;
     private final EmployeeMapper employeeMapper;
+    private final EmployeeSalaryUpdater salaryUpdater;
     private static final Logger logger = LoggerFactory.getLogger(EmployeeServiceImpl.class);
 
     @Autowired
     public EmployeeServiceImpl(EmployeeRepository employeeRepository,
                                AssignmentRepository assignmentRepository,
-                               EmployeeMapper employeeMapper) {
+                               EmployeeMapper employeeMapper,
+                               EmployeeSalaryUpdater salaryUpdater) {
         this.employeeRepository = employeeRepository;
         this.assignmentRepository = assignmentRepository;
         this.employeeMapper = employeeMapper;
+        this.salaryUpdater = salaryUpdater;
     }
 
     @Override
@@ -41,23 +44,19 @@ public class EmployeeServiceImpl implements EmployeeService {
     public EmployeeDTO createEmployee(EmployeeDTO employeeDTO, User authenticatedUser) {
         Employee employee = employeeMapper.toEntity(employeeDTO);
         employee.setCreatedBy(authenticatedUser);
-
         Employee savedEmployee = employeeRepository.save(employee);
-        final Employee finalEmployee = savedEmployee;
 
         if (employeeDTO.getAssignments() != null) {
             Set<Assignment> assignments = employeeDTO.getAssignments().stream()
                     .map(assignmentDTO -> {
                         Assignment assignment = employeeMapper.toAssignmentEntity(assignmentDTO);
-                        assignment.setEmployee(finalEmployee);
+                        assignment.setEmployee(savedEmployee);
                         return assignment;
                     })
                     .collect(Collectors.toSet());
             assignmentRepository.saveAll(assignments);
 
-            finalEmployee.calculateGrossSalary();
-            finalEmployee.updateContractExpirationStatus();
-            savedEmployee = employeeRepository.save(finalEmployee);
+            salaryUpdater.updateEmployeeSalary(savedEmployee);
         }
 
         return employeeMapper.toDto(savedEmployee);
@@ -111,11 +110,8 @@ public class EmployeeServiceImpl implements EmployeeService {
                 assignmentRepository.saveAll(assignments);
             }
 
-            existingEmployee.calculateGrossSalary();
-            existingEmployee.updateContractExpirationStatus();
-
-            Employee updatedEmployee = employeeRepository.save(existingEmployee);
-            return employeeMapper.toDto(updatedEmployee);
+            salaryUpdater.updateEmployeeSalary(existingEmployee);
+            return employeeMapper.toDto(existingEmployee);
         } catch (Exception e) {
             logger.error("Unexpected error while updating employee", e);
             throw new RuntimeException("Unexpected error updating employee", e);

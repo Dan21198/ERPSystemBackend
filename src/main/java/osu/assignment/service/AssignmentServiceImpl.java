@@ -3,14 +3,15 @@ package osu.assignment.service;
 import jakarta.persistence.EntityManager;
 import jakarta.transaction.Transactional;
 import org.hibernate.Hibernate;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 import osu.assignment.model.AssignmentDTO;
 import osu.assignment.mapper.AssignmentMapper;
 import osu.assignment.model.Assignment;
 import osu.assignment.repository.AssignmentRepository;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import osu.employee.model.Employee;
 import osu.employee.repository.EmployeeRepository;
+import osu.employee.service.EmployeeSalaryUpdater;
+import osu.exception.RecordNotFoundException;
 import osu.position.model.Position;
 import osu.position.repository.PositionRepository;
 import osu.tariff.repository.TariffRepository;
@@ -18,6 +19,7 @@ import osu.user.model.User;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Service
@@ -28,17 +30,23 @@ public class AssignmentServiceImpl implements AssignmentService {
     private final TariffRepository tariffRepository;
     private final PositionRepository positionRepository;
     private final EmployeeRepository employeeRepository;
+    private final EmployeeSalaryUpdater salaryUpdater;
     private final EntityManager entityManager;
 
     @Autowired
-    public AssignmentServiceImpl(AssignmentRepository assignmentRepository, AssignmentMapper assignmentMapper,
-                                 TariffRepository tariffRepository, PositionRepository positionRepository,
-                                 EmployeeRepository employeeRepository, EntityManager entityManager) {
+    public AssignmentServiceImpl(AssignmentRepository assignmentRepository,
+                                 AssignmentMapper assignmentMapper,
+                                 TariffRepository tariffRepository,
+                                 PositionRepository positionRepository,
+                                 EmployeeRepository employeeRepository,
+                                 EmployeeSalaryUpdater salaryUpdater,
+                                 EntityManager entityManager) {
         this.assignmentRepository = assignmentRepository;
         this.assignmentMapper = assignmentMapper;
         this.tariffRepository = tariffRepository;
         this.positionRepository = positionRepository;
         this.employeeRepository = employeeRepository;
+        this.salaryUpdater = salaryUpdater;
         this.entityManager = entityManager;
     }
 
@@ -51,7 +59,11 @@ public class AssignmentServiceImpl implements AssignmentService {
     }
 
     @Override
+    @Transactional
     public AssignmentDTO updateAssignment(Long id, AssignmentDTO assignmentDTO, User authenticatedUser) {
+        User managedUser = entityManager.merge(authenticatedUser);
+        Hibernate.initialize(managedUser.getProjects());
+
         Assignment existingAssignment = assignmentRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Assignment not found"));
 
@@ -65,8 +77,7 @@ public class AssignmentServiceImpl implements AssignmentService {
         Assignment updatedAssignment = assignmentRepository.save(existingAssignment);
 
         if (updatedAssignment.getEmployee() != null) {
-            updatedAssignment.getEmployee().calculateGrossSalary();
-            employeeRepository.save(updatedAssignment.getEmployee());
+            salaryUpdater.updateEmployeeSalary(updatedAssignment.getEmployee());
         }
 
         return assignmentMapper.toDTO(updatedAssignment);
@@ -91,19 +102,20 @@ public class AssignmentServiceImpl implements AssignmentService {
             throw new SecurityException("You can only delete assignments you created");
         }
 
+        if (assignment.getEmployee() != null) {
+            salaryUpdater.updateEmployeeSalary(assignment.getEmployee());
+        }
+
         assignmentRepository.deleteById(id);
     }
 
     @Override
     @Transactional
     public AssignmentDTO getAssignmentById(Long id, User authenticatedUser) {
-        User managedUser = entityManager.merge(authenticatedUser);
-        Hibernate.initialize(managedUser.getProjects());
-
         Assignment assignment = assignmentRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Assignment not found"));
+                .orElseThrow(() -> new RecordNotFoundException("Assignment not found"));
 
-        if (!assignment.getCreatedBy().equals(managedUser)) {
+        if (!Objects.equals(assignment.getCreatedBy().getId(), authenticatedUser.getId())) {
             throw new SecurityException("You can only view assignments you created");
         }
 
@@ -134,40 +146,39 @@ public class AssignmentServiceImpl implements AssignmentService {
         assignment.setAllocatedTimePercentage(assignmentDTO.getAllocatedTimePercentage());
         assignment.setActive(true);
 
+        return getAssignmentDTO(assignment);
+    }
+
+    @Override
+    @Transactional
+    public AssignmentDTO deactivateAssignment(Long id, User authenticatedUser) {
+        User managedUser = entityManager.merge(authenticatedUser);
+        Hibernate.initialize(managedUser.getProjects());
+
+        Assignment assignment = assignmentRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Assignment not found"));
+
+        if (!assignment.getCreatedBy().equals(managedUser)) {
+            throw new SecurityException("You can only deactivate assignments you created");
+        }
+
+        assignment.setEndDate(LocalDate.now());
+        assignment.setActive(false);
+        return getAssignmentDTO(assignment);
+    }
+
+
+    private AssignmentDTO getAssignmentDTO(Assignment assignment) {
         Assignment createdAssignment = assignmentRepository.save(assignment);
 
         Position position = assignment.getPosition();
         position.updateTotalAmountSpent();
         positionRepository.save(position);
 
-        assignment.getEmployee().calculateGrossSalary();
-        employeeRepository.save(assignment.getEmployee());
-
-        return assignmentMapper.toDTO(createdAssignment);
-    }
-
-    @Override
-    @Transactional
-    public AssignmentDTO deactivateAssignment(Long id, User authenticatedUser) {
-        Assignment assignment = assignmentRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Assignment not found"));
-
-        if (!assignment.getCreatedBy().equals(authenticatedUser)) {
-            throw new SecurityException("You can only deactivate assignments you created");
+        if (assignment.getEmployee() != null) {
+            salaryUpdater.updateEmployeeSalary(assignment.getEmployee());
         }
 
-        assignment.setEndDate(LocalDate.now());
-        assignment.setActive(false);
-        Assignment updatedAssignment = assignmentRepository.save(assignment);
-
-        Position position = assignment.getPosition();
-        position.updateTotalAmountSpent();
-        positionRepository.save(position);
-
-        Employee employee = assignment.getEmployee();
-        employee.calculateGrossSalary();
-        employeeRepository.save(employee);
-
-        return assignmentMapper.toDTO(updatedAssignment);
+        return assignmentMapper.toDTO(createdAssignment);
     }
 }

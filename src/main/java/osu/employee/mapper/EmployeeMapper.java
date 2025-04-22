@@ -5,11 +5,14 @@ import osu.assignment.model.Assignment;
 import osu.assignment.model.AssignmentDTO;
 import osu.employee.model.Employee;
 import osu.employee.model.EmployeeDTO;
+import osu.employee.service.SalaryCalculator;
 
 import java.util.Set;
 import java.util.stream.Collectors;
 
-@Mapper(componentModel = "spring", nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
+@Mapper(componentModel = "spring",
+        nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE,
+        uses = SalaryCalculator.class)
 public interface EmployeeMapper {
 
     @Mapping(target = "assignments", source = "assignments", qualifiedByName = "mapAssignmentsToDTOs")
@@ -25,6 +28,7 @@ public interface EmployeeMapper {
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "assignments", source = "assignments", qualifiedByName = "mapDTOsToAssignments")
     @Mapping(target = "contractAboutToExpire", ignore = true)
+    @Mapping(target = "grossSalary", ignore = true) // Salary will be calculated by service layer
     void updateEmployeeFromDto(EmployeeDTO employeeDTO, @MappingTarget Employee employee);
 
     @Named("mapAssignmentsToDTOs")
@@ -56,12 +60,20 @@ public interface EmployeeMapper {
 
     @Named("mapWageClass")
     default int mapWageClass(Employee employee) {
-        return employee.getCurrentWageClass();
+        return employee.getAssignments().stream()
+                .filter(Assignment::isActive)
+                .map(assignment -> assignment.getTariff().getWageClass())
+                .findFirst()
+                .orElse(0);
     }
 
     @Named("mapTariffAmount")
     default double mapTariffAmount(Employee employee) {
-        return employee.getCurrentTariffAmount();
+        return employee.getAssignments().stream()
+                .filter(Assignment::isActive)
+                .mapToDouble(assignment -> assignment.getTariff().getWageTariff()
+                        * (assignment.getAllocatedTimePercentage() / 100.0))
+                .sum();
     }
 
     @Mapping(source = "employee.id", target = "employeeId")

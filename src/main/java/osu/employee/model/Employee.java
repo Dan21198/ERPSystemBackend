@@ -6,7 +6,6 @@ import lombok.*;
 import org.hibernate.proxy.HibernateProxy;
 import jakarta.validation.constraints.*;
 import osu.assignment.model.Assignment;
-import osu.performanceBonus.model.PerformanceBonus;
 import osu.user.model.User;
 
 import java.time.LocalDate;
@@ -69,53 +68,15 @@ public class Employee {
 
     @PrePersist
     @PreUpdate
-    public void updateEmployeeState() {
-        calculateGrossSalary();
-        updateContractExpirationStatus();
-    }
-
-    public void calculateGrossSalary() {
-        double tariffAmount = getCurrentTariffAmount();
-        double activeBonuses = getActivePerformanceBonuses();
-        this.grossSalary = tariffAmount + activeBonuses;
-    }
-
     public void updateContractExpirationStatus() {
         if (contractEnd != null) {
             LocalDate today = LocalDate.now();
             LocalDate endDate = new java.sql.Date(contractEnd.getTime()).toLocalDate();
             LocalDate oneMonthBefore = endDate.minusMonths(1);
-
-            // Contract is about to expire if today is between one month before and end date
             this.contractAboutToExpire = !today.isBefore(oneMonthBefore) && !today.isAfter(endDate);
         } else {
             this.contractAboutToExpire = false;
         }
-    }
-
-    public Double getCurrentTariffAmount() {
-        return assignments.stream()
-                .filter(Assignment::isActive)
-                .mapToDouble(assignment -> assignment.getTariff().getWageTariff()
-                        * (assignment.getAllocatedTimePercentage() / 100.0))
-                .sum();
-    }
-
-    public double getActivePerformanceBonuses() {
-        return assignments.stream()
-                .filter(Assignment::isActive)
-                .flatMap(assignment -> assignment.getPerformanceBonuses().stream())
-                .filter(PerformanceBonus::getIsActive)
-                .mapToDouble(PerformanceBonus::getAmount)
-                .sum();
-    }
-
-    public int getCurrentWageClass() {
-        return assignments.stream()
-                .filter(Assignment::isActive)
-                .map(assignment -> assignment.getTariff().getWageClass())
-                .findFirst()
-                .orElse(0);
     }
 
     @Override

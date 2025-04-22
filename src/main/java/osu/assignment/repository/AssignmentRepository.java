@@ -7,10 +7,13 @@ import osu.employee.model.Employee;
 import osu.user.model.User;
 
 import java.util.List;
+import java.util.Set;
 
 @Repository
 public interface AssignmentRepository extends JpaRepository<Assignment, Long> {
     void deleteByEmployee(Employee existingEmployee);
 
     List<Assignment> findByCreatedBy(User authenticatedUser);
+
+    Set<Assignment> findByEmployee(Employee employee);
 }
