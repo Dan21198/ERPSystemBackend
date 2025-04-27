@@ -14,6 +14,8 @@ import osu.exception.RecordNotFoundException;
 import osu.position.repository.PositionRepository;
 import osu.user.model.User;
 
+import java.time.LocalDate;
+
 @Service
 public class PerformanceBonusServiceImpl implements PerformanceBonusService {
     private final AssignmentRepository assignmentRepository;
@@ -97,6 +99,65 @@ public class PerformanceBonusServiceImpl implements PerformanceBonusService {
         updateEmployeeAndPosition(assignment);
 
         return performanceBonusMapper.toDto(updatedBonus);
+    }
+
+    @Override
+    @Transactional
+    public void handleBonusDeactivation(PerformanceBonus bonus) {
+        if (bonus.getAssignment() != null) {
+            updateEmployeeAndPosition(bonus.getAssignment());
+        }
+    }
+
+    @Override
+    @Transactional
+    public PerformanceBonusDTO deactivateBonus(Long assignmentId, Long bonusId, User authenticatedUser) {
+        PerformanceBonus bonus = validateAndGetBonus(assignmentId, bonusId, authenticatedUser);
+
+        bonus.setIsActive(false);
+        performanceBonusRepository.save(bonus);
+
+        handleBonusDeactivation(bonus);
+
+        return performanceBonusMapper.toDto(bonus);
+    }
+
+    @Override
+    @Transactional
+    public PerformanceBonusDTO activateBonus(Long assignmentId, Long bonusId, User authenticatedUser) {
+        PerformanceBonus bonus = validateAndGetBonus(assignmentId, bonusId, authenticatedUser);
+
+        validateEligibilityDate(bonus);
+
+        bonus.setIsActive(true);
+        performanceBonusRepository.save(bonus);
+
+        updateEmployeeAndPosition(bonus.getAssignment());
+
+        return performanceBonusMapper.toDto(bonus);
+    }
+
+    private PerformanceBonus validateAndGetBonus(Long assignmentId, Long bonusId, User authenticatedUser) {
+        Assignment assignment = assignmentRepository.findById(assignmentId)
+                .orElseThrow(() -> new RecordNotFoundException("Assignment not found"));
+
+        verifyAssignmentAccess(assignment, authenticatedUser);
+
+        PerformanceBonus bonus = performanceBonusRepository.findById(bonusId)
+                .orElseThrow(() -> new RecordNotFoundException("Performance bonus not found"));
+
+        if (!bonus.getAssignment().getId().equals(assignmentId)) {
+            throw new IllegalArgumentException("Performance bonus does not belong to the specified assignment");
+        }
+
+        return bonus;
+    }
+
+    private void validateEligibilityDate(PerformanceBonus bonus) {
+        if (bonus.getPerformanceBonusEligibilityDate() != null &&
+                LocalDate.now().isAfter(bonus.getPerformanceBonusEligibilityDate())) {
+            throw new IllegalArgumentException("Cannot activate bonus with eligibility date in the past");
+        }
     }
 
     private void verifyAssignmentAccess(Assignment assignment, User authenticatedUser) {

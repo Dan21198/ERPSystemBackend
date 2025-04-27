@@ -52,4 +52,30 @@ public class PerformanceBonusController {
         PerformanceBonusDTO updatedBonus = performanceBonusService.updateBonus(assignmentId, bonusId, bonusDTO, authenticatedUser);
         return ResponseEntity.ok(updatedBonus);
     }
+
+    @PutMapping ("/{bonusId}/deactivate")
+    @Operation(summary = "Deactivate performance bonus")
+    public ResponseEntity<PerformanceBonusDTO> deactivateBonus(
+            @PathVariable Long assignmentId,
+            @PathVariable Long bonusId,
+            @AuthenticationPrincipal User authenticatedUser) {
+
+        PerformanceBonusDTO deactivatedBonus = performanceBonusService.deactivateBonus(
+                assignmentId, bonusId, authenticatedUser);
+
+        return ResponseEntity.ok(deactivatedBonus);
+    }
+
+    @PutMapping("/{bonusId}/activate")
+    @Operation(summary = "Activate performance bonus")
+    public ResponseEntity<PerformanceBonusDTO> activateBonus(
+            @PathVariable Long assignmentId,
+            @PathVariable Long bonusId,
+            @AuthenticationPrincipal User authenticatedUser) {
+
+        PerformanceBonusDTO activatedBonus = performanceBonusService.activateBonus(
+                assignmentId, bonusId, authenticatedUser);
+
+        return ResponseEntity.ok(activatedBonus);
+    }
 }

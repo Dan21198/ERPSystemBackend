@@ -10,12 +10,12 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 
 @Service
-public class ProjectStatusUpdateService {
+public class ProjectStatusUpdateScheduler {
 
     private final ProjectRepository projectRepository;
 
     @Autowired
-    public ProjectStatusUpdateService(ProjectRepository projectRepository) {
+    public ProjectStatusUpdateScheduler(ProjectRepository projectRepository) {
         this.projectRepository = projectRepository;
     }
 

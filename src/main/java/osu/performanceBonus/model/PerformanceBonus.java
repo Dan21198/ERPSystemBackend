@@ -7,7 +7,7 @@ import lombok.*;
 import osu.assignment.model.Assignment;
 import osu.user.model.User;
 
-import java.util.Date;
+import java.time.LocalDate;
 
 @Entity
 @Getter
@@ -24,7 +24,7 @@ public class PerformanceBonus {
     private Double amount;
 
     @FutureOrPresent(message = "End date must be in the future or present")
-    private Date performanceBonusEligibilityDate;
+    private LocalDate performanceBonusEligibilityDate;
 
     @NotNull(message = "Active state must not be null")
     private Boolean isActive;
@@ -46,4 +46,10 @@ public class PerformanceBonus {
     @JsonManagedReference
     @ToString.Exclude
     private User createdBy;
+
+    public boolean shouldBeDeactivated() {
+        return performanceBonusEligibilityDate != null &&
+                LocalDate.now().isAfter(performanceBonusEligibilityDate) &&
+                isActive;
+    }
 }

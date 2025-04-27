@@ -1,9 +1,10 @@
 package osu.performanceBonus.model;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.*;
 import lombok.*;
 
-import java.util.Date;
+import java.time.LocalDate;
 
 @Getter
 @Setter
@@ -19,8 +20,8 @@ public class PerformanceBonusDTO {
     private Double amount;
 
     @FutureOrPresent(message = "End date must be in the future or present")
-    private Date performanceBonusEligibilityDate;
+    private LocalDate performanceBonusEligibilityDate;
 
-    @NotNull(message = "Active state must not be null")
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     private Boolean isActive;
 }
