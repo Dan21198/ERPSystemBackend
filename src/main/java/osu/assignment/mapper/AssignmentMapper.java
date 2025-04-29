@@ -41,6 +41,8 @@ public interface AssignmentMapper {
         }
     }
 
+    @Mapping(source = "startDate", target = "startDate")
+    @Mapping(source = "endDate", target = "endDate")
     @Mapping(source = "employeeId", target = "employee.id")
     @Mapping(source = "positionId", target = "position", qualifiedByName = "mapPosition")
     @Mapping(source = "tariffId", target = "tariff", qualifiedByName = "mapTariff")

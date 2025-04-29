@@ -85,12 +85,19 @@ public class AssignmentServiceImpl implements AssignmentService {
 
     private void updateActiveStatusBasedOnDates(Assignment existingAssignment) {
         LocalDate today = LocalDate.now();
-        if (existingAssignment.getStartDate() != null && existingAssignment.getEndDate() != null) {
-            existingAssignment.setActive(today.isAfter(existingAssignment.getStartDate())
-                    && today.isBefore(existingAssignment.getEndDate()));
-        } else {
-            existingAssignment.setActive(false);
-        }
+        LocalDate startDate = existingAssignment.getStartDate();
+        LocalDate endDate = existingAssignment.getEndDate();
+
+        boolean isActive = areDatesValid(startDate, endDate) && isDateInRange(today, startDate, endDate);
+        existingAssignment.setActive(isActive);
+    }
+
+    private boolean areDatesValid(LocalDate startDate, LocalDate endDate) {
+        return startDate != null && endDate != null && !startDate.isAfter(endDate);
+    }
+
+    private boolean isDateInRange(LocalDate dateToCheck, LocalDate startDate, LocalDate endDate) {
+        return !dateToCheck.isBefore(startDate) && !dateToCheck.isAfter(endDate);
     }
 
     @Override
