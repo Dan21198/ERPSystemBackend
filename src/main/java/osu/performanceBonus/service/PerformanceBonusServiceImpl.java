@@ -12,6 +12,7 @@ import osu.performanceBonus.mapper.PerformanceBonusMapper;
 import osu.performanceBonus.repository.PerformanceBonusRepository;
 import osu.exception.RecordNotFoundException;
 import osu.position.repository.PositionRepository;
+import osu.position.service.PositionCalculationService;
 import osu.user.model.User;
 
 import java.time.LocalDate;
@@ -23,18 +24,21 @@ public class PerformanceBonusServiceImpl implements PerformanceBonusService {
     private final PerformanceBonusMapper performanceBonusMapper;
     private final EmployeeSalaryUpdater salaryUpdater;
     private final PositionRepository positionRepository;
+    private final PositionCalculationService positionCalculationService;
 
     @Autowired
     public PerformanceBonusServiceImpl(AssignmentRepository assignmentRepository,
                                        PerformanceBonusRepository performanceBonusRepository,
                                        PerformanceBonusMapper performanceBonusMapper,
                                        EmployeeSalaryUpdater salaryUpdater,
-                                       PositionRepository positionRepository) {
+                                       PositionRepository positionRepository,
+                                       PositionCalculationService positionCalculationService) {
         this.assignmentRepository = assignmentRepository;
         this.performanceBonusRepository = performanceBonusRepository;
         this.performanceBonusMapper = performanceBonusMapper;
         this.salaryUpdater = salaryUpdater;
         this.positionRepository = positionRepository;
+        this.positionCalculationService = positionCalculationService;
     }
 
     @Override
@@ -172,7 +176,7 @@ public class PerformanceBonusServiceImpl implements PerformanceBonusService {
         }
 
         if (assignment.getPosition() != null) {
-            assignment.getPosition().updateTotalAmountSpent();
+            positionCalculationService.updateTotalAmountSpent(assignment.getPosition());
             positionRepository.save(assignment.getPosition());
         }
     }

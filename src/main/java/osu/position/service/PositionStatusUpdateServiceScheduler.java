@@ -10,13 +10,15 @@ import osu.position.repository.PositionRepository;
 import java.util.List;
 
 @Service
-public class PositionStatusUpdateService {
+public class PositionStatusUpdateServiceScheduler {
 
     private final PositionRepository positionRepository;
+    private final PositionCalculationService calculationService;
 
     @Autowired
-    public PositionStatusUpdateService(PositionRepository positionRepository) {
+    public PositionStatusUpdateServiceScheduler(PositionRepository positionRepository, PositionCalculationService calculationService) {
         this.positionRepository = positionRepository;
+        this.calculationService = calculationService;
     }
 
 
@@ -26,7 +28,7 @@ public class PositionStatusUpdateService {
         List<Position> positions = positionRepository.findAll();
 
         for (Position position : positions) {
-            position.updateTotalAmountSpent();
+            calculationService.updateTotalAmountSpent(position);
             positionRepository.save(position);
         }
     }

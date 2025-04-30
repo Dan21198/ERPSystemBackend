@@ -14,6 +14,7 @@ import osu.employee.service.EmployeeSalaryUpdater;
 import osu.exception.RecordNotFoundException;
 import osu.position.model.Position;
 import osu.position.repository.PositionRepository;
+import osu.position.service.PositionCalculationService;
 import osu.tariff.repository.TariffRepository;
 import osu.user.model.User;
 
@@ -32,6 +33,7 @@ public class AssignmentServiceImpl implements AssignmentService {
     private final EmployeeRepository employeeRepository;
     private final EmployeeSalaryUpdater salaryUpdater;
     private final EntityManager entityManager;
+    private final PositionCalculationService positionCalculationService;
 
     @Autowired
     public AssignmentServiceImpl(AssignmentRepository assignmentRepository,
@@ -40,7 +42,7 @@ public class AssignmentServiceImpl implements AssignmentService {
                                  PositionRepository positionRepository,
                                  EmployeeRepository employeeRepository,
                                  EmployeeSalaryUpdater salaryUpdater,
-                                 EntityManager entityManager) {
+                                 EntityManager entityManager, PositionCalculationService positionCalculationService) {
         this.assignmentRepository = assignmentRepository;
         this.assignmentMapper = assignmentMapper;
         this.tariffRepository = tariffRepository;
@@ -48,6 +50,7 @@ public class AssignmentServiceImpl implements AssignmentService {
         this.employeeRepository = employeeRepository;
         this.salaryUpdater = salaryUpdater;
         this.entityManager = entityManager;
+        this.positionCalculationService = positionCalculationService;
     }
 
     @Override
@@ -179,7 +182,7 @@ public class AssignmentServiceImpl implements AssignmentService {
         Assignment createdAssignment = assignmentRepository.save(assignment);
 
         Position position = assignment.getPosition();
-        position.updateTotalAmountSpent();
+        positionCalculationService.updateTotalAmountSpent(position);
         positionRepository.save(position);
 
         if (assignment.getEmployee() != null) {
@@ -188,4 +191,5 @@ public class AssignmentServiceImpl implements AssignmentService {
 
         return assignmentMapper.toDTO(createdAssignment);
     }
+
 }

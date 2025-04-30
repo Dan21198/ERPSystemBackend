@@ -29,7 +29,8 @@ public class PositionServiceImpl implements PositionService {
 
     @Autowired
     public PositionServiceImpl(PositionRepository positionRepository,
-                               PositionMapper positionMapper, EmployeeMapper employeeMapper, ProjectRepository projectRepository) {
+                               PositionMapper positionMapper, EmployeeMapper employeeMapper,
+                               ProjectRepository projectRepository) {
         this.positionRepository = positionRepository;
         this.positionMapper = positionMapper;
         this.employeeMapper = employeeMapper;
