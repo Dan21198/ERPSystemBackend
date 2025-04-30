@@ -1,10 +1,12 @@
 package osu.position.service;
 
 import jakarta.transaction.Transactional;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import osu.assignment.model.Assignment;
 import osu.employee.mapper.EmployeeMapper;
+import osu.employee.model.Employee;
 import osu.employee.model.EmployeeDTO;
 import osu.exception.RecordNotFoundException;
 import osu.position.mapper.PositionMapper;
@@ -17,6 +19,7 @@ import osu.user.model.User;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
@@ -91,8 +94,18 @@ public class PositionServiceImpl implements PositionService {
                 .orElseThrow(() -> new RecordNotFoundException("Position not found or unauthorized"));
 
         return position.getAssignments().stream()
-                .map(Assignment::getEmployee)
-                .map(employeeMapper::toDto)
+                .map(assignment -> {
+                    Employee employee = assignment.getEmployee();
+                    Employee employeeWithFilteredAssignments = new Employee();
+                    BeanUtils.copyProperties(employee, employeeWithFilteredAssignments, "assignments");
+
+                    Set<Assignment> filteredAssignments = employee.getAssignments().stream()
+                            .filter(a -> a.getPosition().getId().equals(positionId))
+                            .collect(Collectors.toSet());
+                    employeeWithFilteredAssignments.setAssignments(filteredAssignments);
+
+                    return employeeMapper.toDto(employeeWithFilteredAssignments);
+                })
                 .collect(Collectors.toList());
     }
 }
