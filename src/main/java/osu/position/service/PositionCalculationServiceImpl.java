@@ -8,6 +8,7 @@ import osu.position.model.Position;
 import java.time.LocalDate;
 import java.time.YearMonth;
 import java.time.temporal.ChronoUnit;
+import java.util.Optional;
 
 @Service
 public class PositionCalculationServiceImpl implements PositionCalculationService {
@@ -46,49 +47,92 @@ public class PositionCalculationServiceImpl implements PositionCalculationServic
 
     @Override
     public double calculateAssignmentCost(Assignment assignment) {
-        if (assignment.getTariff() == null
-                || assignment.getAllocatedTimePercentage() == null
-                || assignment.getStartDate() == null) {
+        if (!isValidAssignment(assignment)) {
             return 0.0;
         }
 
-        LocalDate start = assignment.getStartDate();
-        LocalDate end = LocalDate.now();
+        LocalDate startDate = assignment.getStartDate();
+        LocalDate endDate = determineEndDate(assignment);
 
-        if (assignment.getEndDate() != null && assignment.getEndDate().isBefore(end)) {
-            end = assignment.getEndDate();
-        }
-
-        if (start.isAfter(end)) {
+        if (isStartAfterEnd(startDate, endDate)) {
             return 0.0;
         }
 
-        double monthlyCost = assignment.getTariff().getWageTariff() *
-                (assignment.getAllocatedTimePercentage() / 100.0);
+        return calculateBaseCost(assignment, startDate, endDate) + calculateBonusCost(assignment);
+    }
 
+    private boolean isValidAssignment(Assignment assignment) {
+        return assignment.getTariff() != null
+                && assignment.getAllocatedTimePercentage() != null
+                && assignment.getStartDate() != null;
+    }
+
+    private boolean isStartAfterEnd(LocalDate startDate, LocalDate endDate) {
+        return startDate.isAfter(endDate);
+    }
+
+    private LocalDate determineEndDate(Assignment assignment) {
+        return Optional.ofNullable(assignment.getEndDate())
+                .filter(endDate -> endDate.isBefore(LocalDate.now()))
+                .orElse(LocalDate.now());
+    }
+
+    private double calculateBaseCost(Assignment assignment, LocalDate startDate, LocalDate endDate) {
+        double monthlyCost = calculateMonthlyCost(assignment);
         double totalCost = 0.0;
-        LocalDate current = start;
+        LocalDate currentDate = startDate;
 
-        while (!current.isAfter(end)) {
-            YearMonth yearMonth = YearMonth.from(current);
-            int daysInMonth = yearMonth.lengthOfMonth();
-            LocalDate monthEnd = yearMonth.atEndOfMonth();
-            LocalDate periodEnd = end.isBefore(monthEnd) ? end : monthEnd;
+        while (!currentDate.isAfter(endDate)) {
+            YearMonth yearMonth = YearMonth.from(currentDate);
+            LocalDate periodEnd = calculatePeriodEnd(yearMonth, endDate);
 
-            long daysInPeriod = ChronoUnit.DAYS.between(current, periodEnd) + 1;
-            double dailyRate = monthlyCost / daysInMonth;
-            totalCost += dailyRate * daysInPeriod;
-
-            current = periodEnd.plusDays(1);
+            totalCost += calculatePeriodCost(monthlyCost, yearMonth, currentDate, periodEnd);
+            currentDate = periodEnd.plusDays(1);
         }
 
-        double bonusCost = assignment.getPerformanceBonuses().stream()
-                .filter(bonus -> bonus.getIsActive() &&
-                        (bonus.getPerformanceBonusEligibilityDate() == null ||
-                                !bonus.getPerformanceBonusEligibilityDate().isAfter(LocalDate.now())))
+        return totalCost;
+    }
+
+    private LocalDate calculatePeriodEnd(YearMonth yearMonth, LocalDate endDate) {
+        LocalDate monthEnd = yearMonth.atEndOfMonth();
+        return endDate.isBefore(monthEnd) ? endDate : monthEnd;
+    }
+
+    private double calculatePeriodCost(double monthlyCost, YearMonth yearMonth,
+                                       LocalDate periodStart, LocalDate periodEnd) {
+        int daysInMonth = yearMonth.lengthOfMonth();
+        long daysInPeriod = ChronoUnit.DAYS.between(periodStart, periodEnd) + 1;
+        double dailyRate = monthlyCost / daysInMonth;
+        return dailyRate * daysInPeriod;
+    }
+
+    private double calculateMonthlyCost(Assignment assignment) {
+        return assignment.getTariff().getWageTariff() *
+                (assignment.getAllocatedTimePercentage() / 100.0);
+    }
+
+    private double calculateBonusCost(Assignment assignment) {
+        return assignment.getPerformanceBonuses().stream()
+                .filter(this::isActiveBonus)
                 .mapToDouble(PerformanceBonus::getAmount)
                 .sum();
+    }
 
-        return totalCost + bonusCost;
+    private boolean isActiveBonus(PerformanceBonus bonus) {
+        if (!bonus.getIsActive()) {
+            return false;
+        }
+
+        LocalDate eligibilityDate = bonus.getPerformanceBonusEligibilityDate();
+
+        if (eligibilityDate == null) {
+            return true;
+        }
+
+        LocalDate now = LocalDate.now();
+        YearMonth currentMonth = YearMonth.from(now);
+        YearMonth bonusMonth = YearMonth.from(eligibilityDate);
+
+        return bonusMonth.isBefore(currentMonth) || bonusMonth.equals(currentMonth);
     }
 }
