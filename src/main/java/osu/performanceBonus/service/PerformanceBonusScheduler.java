@@ -21,10 +21,8 @@ public class PerformanceBonusScheduler {
     @Scheduled(cron = "0 0 0 * * ?") // Runs every day at midnight
     @Transactional
     public void checkPerformanceBonusesValidity() {
-        log.info("Starting scheduled performance bonuses check");
 
         List<PerformanceBonus> activeBonuses = performanceBonusRepository.findByIsActiveTrue();
-        int deactivatedCount = 0;
 
         for (PerformanceBonus bonus : activeBonuses) {
             if (bonus.shouldBeDeactivated()) {
@@ -32,13 +30,7 @@ public class PerformanceBonusScheduler {
                 performanceBonusRepository.save(bonus);
 
                 performanceBonusService.handleBonusDeactivation(bonus);
-
-                deactivatedCount++;
-                log.debug("Deactivated bonus ID: {}, for assignment ID: {}",
-                        bonus.getId(), bonus.getAssignment().getId());
             }
         }
-
-        log.info("Completed scheduled performance bonuses check. Deactivated: {}", deactivatedCount);
     }
 }

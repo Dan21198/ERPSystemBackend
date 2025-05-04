@@ -8,4 +8,5 @@ public interface PositionCalculationService {
     Double calculateFte(Position position);
     void updateTotalAmountSpent(Position position);
     double calculateAssignmentCost(Assignment assignment);
+    void checkAllowedSpentAmount(Position position);
 }

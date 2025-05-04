@@ -33,6 +33,10 @@ public class PositionDTO {
     @Max(value = 100, message = "Allocated time percentage must be at most 100")
     private Integer allocatedTimePercentage;
 
+    private Double allowedSpentAmount;
+
+    private Boolean isOverAllowedSpentAmount;
+
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     private Double fte;
 

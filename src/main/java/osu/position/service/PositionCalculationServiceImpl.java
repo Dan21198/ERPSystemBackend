@@ -46,6 +46,13 @@ public class PositionCalculationServiceImpl implements PositionCalculationServic
     }
 
     @Override
+    public void checkAllowedSpentAmount(Position position) {
+        if (position.getAllowedSpentAmount() == null) return;
+        boolean isOver = position.getTotalAmountSpent() > position.getAllowedSpentAmount();
+        position.setIsOverAllowedSpentAmount(isOver);
+    }
+
+    @Override
     public double calculateAssignmentCost(Assignment assignment) {
         if (!isValidAssignment(assignment)) {
             return 0.0;

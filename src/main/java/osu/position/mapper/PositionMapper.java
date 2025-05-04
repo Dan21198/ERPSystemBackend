@@ -14,17 +14,20 @@ public interface PositionMapper {
     @Mapping(target = "totalAmountSpent", source = "totalAmountSpent")
     PositionDTO toDto(Position position, @Context PositionCalculationService calculationService);
 
+    @Mapping(target = "isOverAllowedSpentAmount", source = "isOverAllowedSpentAmount")
     default PositionDTO toDto(Position position) {
         return toDto(position, SpringContext.getBean(PositionCalculationService.class));
     }
 
     @Mapping(target = "project", ignore = true)
     @Mapping(target = "totalAmountSpent", ignore = true)
+    @Mapping(target = "isOverAllowedSpentAmount", ignore = true)
     Position toEntity(PositionDTO positionDTO);
 
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "project", ignore = true)
     @Mapping(target = "totalAmountSpent", ignore = true)
+    @Mapping(target = "isOverAllowedSpentAmount", ignore = true)
     void updateEntityFromDto(PositionDTO positionDTO, @MappingTarget Position position);
 
     @AfterMapping
@@ -36,8 +39,11 @@ public interface PositionMapper {
                 dto.setFte(calculationService.calculateFte(position));
             }
 
-            Double amount = position.getTotalAmountSpent();
-            dto.setTotalAmountSpent(amount != null ? amount : 0.0);
+            dto.setTotalAmountSpent(position.getTotalAmountSpent() != null ?
+                    position.getTotalAmountSpent() : 0.0);
+            dto.setAllowedSpentAmount(position.getAllowedSpentAmount());
+            dto.setIsOverAllowedSpentAmount(position.getIsOverAllowedSpentAmount() != null ?
+                    position.getIsOverAllowedSpentAmount() : false);
         }
     }
 }

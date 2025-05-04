@@ -29,6 +29,7 @@ public class PositionStatusUpdateServiceScheduler {
 
         for (Position position : positions) {
             calculationService.updateTotalAmountSpent(position);
+            calculationService.checkAllowedSpentAmount(position);
             positionRepository.save(position);
         }
     }

@@ -39,6 +39,10 @@ public class Position {
 
     private Double totalAmountSpent = 0.0;
 
+    private Double allowedSpentAmount = 0.0;
+
+    private Boolean isOverAllowedSpentAmount = false;
+
     @OneToMany(mappedBy = "position", cascade = CascadeType.PERSIST)
     private Set<Assignment> assignments = new HashSet<>();
 
