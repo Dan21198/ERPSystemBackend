@@ -120,24 +120,19 @@ public class PositionCalculationServiceImpl implements PositionCalculationServic
 
     private double calculateBonusCost(Assignment assignment) {
         return assignment.getPerformanceBonuses().stream()
-                .filter(this::isActiveBonus)
+                .filter(this::isEligibleBonus)
                 .mapToDouble(PerformanceBonus::getAmount)
                 .sum();
     }
 
-    private boolean isActiveBonus(PerformanceBonus bonus) {
-        if (!bonus.getIsActive()) {
-            return false;
-        }
-
+    private boolean isEligibleBonus(PerformanceBonus bonus) {
         LocalDate eligibilityDate = bonus.getPerformanceBonusEligibilityDate();
 
         if (eligibilityDate == null) {
             return true;
         }
 
-        LocalDate now = LocalDate.now();
-        YearMonth currentMonth = YearMonth.from(now);
+        YearMonth currentMonth = YearMonth.from(LocalDate.now());
         YearMonth bonusMonth = YearMonth.from(eligibilityDate);
 
         return bonusMonth.isBefore(currentMonth) || bonusMonth.equals(currentMonth);
