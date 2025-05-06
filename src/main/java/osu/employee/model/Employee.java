@@ -51,7 +51,7 @@ public class Employee {
 
     @NotNull(message = "Gross salary must not be null")
     @PositiveOrZero(message = "Gross salary must be zero or positive")
-    private Double grossSalary;
+    private Double grossSalary = 0.0;
 
     @OneToMany(mappedBy = "employee", cascade = CascadeType.ALL)
     @ToString.Exclude

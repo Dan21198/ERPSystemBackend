@@ -23,6 +23,7 @@ public interface EmployeeMapper {
     EmployeeDTO toDto(Employee employee);
 
     @Mapping(target = "assignments", source = "assignments", qualifiedByName = "mapDTOsToAssignments")
+    @Mapping(target = "grossSalary", ignore = true)
     Employee toEntity(EmployeeDTO employeeDTO);
 
     @Mapping(target = "id", ignore = true)
