@@ -35,7 +35,6 @@ public class AuthenticationServiceImpl implements AuthenticationService{
 
     public User signup(RegisterUserDto input) {
         User user = new User()
-                .setUsername(input.getUsername())
                 .setEmail(input.getEmail())
                 .setPassword(passwordEncoder.encode(input.getPassword()))
                 .setRole("USER")

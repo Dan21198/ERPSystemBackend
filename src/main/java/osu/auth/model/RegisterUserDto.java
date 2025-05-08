@@ -9,11 +9,6 @@ import java.util.Set;
 
 @Data
 public class RegisterUserDto {
-
-    @NotBlank(message = "Username cannot be blank")
-    @Size(min = 3, max = 100, message = "Username must be between 3 and 100 characters")
-    private String username;
-
     @NotBlank(message = "Email cannot be blank")
     @Email(message = "Email must be a valid email address")
     private String email;
