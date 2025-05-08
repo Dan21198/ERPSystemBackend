@@ -41,7 +41,8 @@ public class SecurityConfiguration {
                                 "/v3/api-docs*/**",
                                 "/webjars/**"
                         ).permitAll()
-                        .requestMatchers("/api/v1/auth/signup", "/api/v1/auth/login","/api/v1/auth/refresh")
+                        .requestMatchers("/api/v1/auth/signup", "/api/v1/auth/login","/api/v1/auth/refresh",
+                                "/api/v1/auth/generate-password")
                         .permitAll()
                         .anyRequest().authenticated()
                 )

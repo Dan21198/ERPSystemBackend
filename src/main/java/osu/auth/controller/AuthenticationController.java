@@ -77,7 +77,7 @@ public class AuthenticationController {
                     content = @Content(
                             mediaType = "application/json",
                             schema = @Schema(
-                                    example = "{\"refreshToken\": \"token\"}" // Example directly added here
+                                    example = "{\"refreshToken\": \"token\"}"
                             )
                     )
             )
@@ -117,4 +117,68 @@ public class AuthenticationController {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
     }
 
+    @PostMapping("/reset-password")
+    @Operation(
+            summary = "Reset password",
+            description = "Resets the password for the logged-in user"
+    )
+    public ResponseEntity<Map<String, String>> resetPassword(
+            @io.swagger.v3.oas.annotations.parameters.RequestBody(
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(
+                                    example = "{\"email\": \"user@example.com\", \"currentPassword\": \"oldPassword\", \"newPassword\": \"newPassword\"}"
+                            )
+                    )
+            )
+            @RequestBody Map<String, String> payload) {
+
+        String email = payload.get("email");
+        String currentPassword = payload.get("currentPassword");
+        String newPassword = payload.get("newPassword");
+
+        if (email == null || currentPassword == null || newPassword == null) {
+            return ResponseEntity.badRequest().body(Map.of("message", "Email, current password and new password are required"));
+        }
+
+        try {
+            boolean success = authenticationService.resetPassword(email, currentPassword, newPassword);
+            if (success) {
+                return ResponseEntity.ok(Map.of("message", "Password was successfully changed"));
+            } else {
+                return ResponseEntity.badRequest().body(Map.of("message", "Failed to change password"));
+            }
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
+        }
+    }
+
+    @PostMapping("/generate-password")
+    @Operation(
+            summary = "Generate and send new password",
+            description = "Generates a new random password and sends it to the user's email (for forgotten password cases)"
+    )
+    public ResponseEntity<Map<String, String>> generatePassword(
+            @io.swagger.v3.oas.annotations.parameters.RequestBody(
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(
+                                    example = "{\"email\": \"user@example.com\"}"
+                            )
+                    )
+            )
+            @RequestBody Map<String, String> payload) {
+
+        String email = payload.get("email");
+        if (email == null || email.isEmpty()) {
+            return ResponseEntity.badRequest().body(Map.of("message", "Email is required"));
+        }
+
+        try {
+            authenticationService.generateAndSendPassword(email);
+            return ResponseEntity.ok(Map.of("message", "New password has been generated and sent to email"));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
+        }
+    }
 }

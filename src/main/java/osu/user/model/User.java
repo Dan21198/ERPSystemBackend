@@ -5,12 +5,10 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
 import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
-
 import lombok.ToString;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -32,7 +30,6 @@ public class User implements UserDetails{
     private String passwordHash;
     private String role;
     private Boolean isActive;
-
 
     @ManyToMany(mappedBy = "users", fetch = FetchType.LAZY)
     @JsonIgnore
