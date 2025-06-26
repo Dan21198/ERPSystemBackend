@@ -15,6 +15,7 @@ import osu.exception.RecordNotFoundException;
 import osu.position.model.Position;
 import osu.position.repository.PositionRepository;
 import osu.position.service.PositionCalculationService;
+import osu.project.service.ProjectFinancialService;
 import osu.tariff.repository.TariffRepository;
 import osu.user.model.User;
 
@@ -25,7 +26,6 @@ import java.util.stream.Collectors;
 
 @Service
 public class AssignmentServiceImpl implements AssignmentService {
-
     private final AssignmentRepository assignmentRepository;
     private final AssignmentMapper assignmentMapper;
     private final TariffRepository tariffRepository;
@@ -34,6 +34,7 @@ public class AssignmentServiceImpl implements AssignmentService {
     private final EmployeeSalaryUpdater salaryUpdater;
     private final EntityManager entityManager;
     private final PositionCalculationService positionCalculationService;
+    private final ProjectFinancialService projectFinancialService;
 
     @Autowired
     public AssignmentServiceImpl(AssignmentRepository assignmentRepository,
@@ -42,7 +43,8 @@ public class AssignmentServiceImpl implements AssignmentService {
                                  PositionRepository positionRepository,
                                  EmployeeRepository employeeRepository,
                                  EmployeeSalaryUpdater salaryUpdater,
-                                 EntityManager entityManager, PositionCalculationService positionCalculationService) {
+                                 EntityManager entityManager, PositionCalculationService positionCalculationService,
+                                 ProjectFinancialService projectFinancialService) {
         this.assignmentRepository = assignmentRepository;
         this.assignmentMapper = assignmentMapper;
         this.tariffRepository = tariffRepository;
@@ -51,6 +53,7 @@ public class AssignmentServiceImpl implements AssignmentService {
         this.salaryUpdater = salaryUpdater;
         this.entityManager = entityManager;
         this.positionCalculationService = positionCalculationService;
+        this.projectFinancialService = projectFinancialService;
     }
 
     @Override
@@ -183,6 +186,7 @@ public class AssignmentServiceImpl implements AssignmentService {
 
         Position position = assignment.getPosition();
         positionCalculationService.updateTotalAmountSpent(position);
+        projectFinancialService.updateTotalAmountSpent(position.getProject());
         positionRepository.save(position);
 
         if (assignment.getEmployee() != null) {
@@ -191,5 +195,4 @@ public class AssignmentServiceImpl implements AssignmentService {
 
         return assignmentMapper.toDTO(createdAssignment);
     }
-
 }

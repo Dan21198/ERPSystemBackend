@@ -36,16 +36,19 @@ public class ProjectServiceImpl implements ProjectService {
     private final ProjectMapper projectMapper;
     private final EmployeeMapper employeeMapper;
     private final ContractRepository contractRepository;
+    private final ProjectFinancialService projectFinancialService;
     private static final Logger logger = LoggerFactory.getLogger(ProjectServiceImpl.class);
 
     @Autowired
     public ProjectServiceImpl(ProjectRepository projectRepository, PositionRepository positionRepository,
-                              ProjectMapper projectMapper, EmployeeMapper employeeMapper, ContractRepository contractRepository) {
+                              ProjectMapper projectMapper, EmployeeMapper employeeMapper,
+                              ContractRepository contractRepository, ProjectFinancialService projectFinancialService) {
         this.projectRepository = projectRepository;
         this.positionRepository = positionRepository;
         this.projectMapper = projectMapper;
         this.employeeMapper = employeeMapper;
         this.contractRepository = contractRepository;
+        this.projectFinancialService = projectFinancialService;
     }
 
     @PersistenceContext
@@ -65,6 +68,9 @@ public class ProjectServiceImpl implements ProjectService {
         User managedUser = entityManager.merge(authenticatedUser);
         project.getUsers().add(managedUser);
 
+        projectFinancialService.updateTotalAmountSpent(project);
+        projectFinancialService.updateTotalAmountAllocated(project);
+
         Project savedProject = projectRepository.save(project);
         return projectMapper.toDto(savedProject);
     }
@@ -79,6 +85,8 @@ public class ProjectServiceImpl implements ProjectService {
         try {
             projectMapper.updateProjectFromDto(projectDTO, existingProject);
             fetchAndSetPositions(projectDTO, existingProject);
+
+            projectFinancialService.updateTotalAmountSpent(existingProject);
 
             Project updatedProject = projectRepository.save(existingProject);
             return projectMapper.toDto(updatedProject);
@@ -174,11 +182,14 @@ public class ProjectServiceImpl implements ProjectService {
 
         contract.setProject(project);
         project.getContracts().add(contract);
-        project.updateTotalAmountAllocated();
+
+        projectFinancialService.synchronizeContractOrderNames(project);
+        projectFinancialService.updateTotalAmountAllocated(project);
 
         Project updatedProject = projectRepository.save(project);
         return projectMapper.toDto(updatedProject);
     }
+
 
     @Override
     @Transactional
@@ -188,7 +199,8 @@ public class ProjectServiceImpl implements ProjectService {
 
         project.getContracts().remove(contract);
         contract.setProject(null);
-        project.updateTotalAmountAllocated();
+
+        projectFinancialService.updateTotalAmountAllocated(project);
 
         Project updatedProject = projectRepository.save(project);
         return projectMapper.toDto(updatedProject);
@@ -284,10 +296,12 @@ public class ProjectServiceImpl implements ProjectService {
     private void validateProjectDates(ProjectDTO projectDTO) {
         if (!Objects.equals(projectDTO.getProjectStatus(), ProjectStatus.SUSTAINABILITY.toString())) {
             if (projectDTO.getProjectStart() == null) {
-                throw new IllegalArgumentException("Project start date is required for status: " + projectDTO.getProjectStatus());
+                throw new IllegalArgumentException("Project start date is required for status: "
+                        + projectDTO.getProjectStatus());
             }
             if (projectDTO.getProjectEnd() == null) {
-                throw new IllegalArgumentException("Project end date is required for status: " + projectDTO.getProjectStatus());
+                throw new IllegalArgumentException("Project end date is required for status: "
+                        + projectDTO.getProjectStatus());
             }
         }
     }

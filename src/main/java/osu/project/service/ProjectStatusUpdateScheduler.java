@@ -13,10 +13,13 @@ import java.util.List;
 public class ProjectStatusUpdateScheduler {
 
     private final ProjectRepository projectRepository;
+    private final ProjectFinancialService projectFinancialService;
 
     @Autowired
-    public ProjectStatusUpdateScheduler(ProjectRepository projectRepository) {
+    public ProjectStatusUpdateScheduler(ProjectRepository projectRepository,
+                                        ProjectFinancialService projectFinancialService) {
         this.projectRepository = projectRepository;
+        this.projectFinancialService = projectFinancialService;
     }
 
     @Scheduled(cron = "0 0 0 * * ?") // Runs every day at midnight
@@ -25,7 +28,7 @@ public class ProjectStatusUpdateScheduler {
         List<Project> projects = projectRepository.findAll();
 
         for (Project project : projects) {
-            project.updateTotalAmountSpent();
+            projectFinancialService.updateTotalAmountSpent(project);
             projectRepository.save(project);
         }
     }

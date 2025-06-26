@@ -44,39 +44,7 @@ public class Project {
 
     private Double totalAmountSpent = 0.0;
 
-    public Double getTotalAmountSpent() {
-        if (this.positions == null || this.positions.isEmpty()) {
-            return 0.0;
-        }
-
-        return this.positions.stream()
-                .filter(Objects::nonNull)
-                .mapToDouble(position -> {
-                    Double amount = position.getTotalAmountSpent();
-                    return amount != null ? amount : 0.0;
-                })
-                .sum();
-    }
-
-    public void updateTotalAmountSpent() {
-        this.totalAmountSpent = getTotalAmountSpent();
-    }
-
     private Double totalAmountAllocated = 0.0;
-
-    public Double getTotalAmountAllocated() {
-        if (this.contracts == null || this.contracts.isEmpty()) {
-            return 0.0;
-        }
-
-        return this.contracts.stream()
-                .mapToDouble(Contract::getAvailableAmount)
-                .sum();
-    }
-
-    public void updateTotalAmountAllocated() {
-        this.totalAmountAllocated = getTotalAmountAllocated();
-    }
 
     @OneToMany(mappedBy = "project", cascade = CascadeType.ALL)
     @JsonManagedReference
@@ -95,17 +63,6 @@ public class Project {
     @JsonManagedReference
     @ToString.Exclude
     private Set<Contract> contracts = new HashSet<>();
-
-    public void setProjectName(String projectName) {
-        this.projectName = projectName;
-        updateContractOrderNames();
-    }
-
-    private void updateContractOrderNames() {
-        if (this.contracts != null) {
-            this.contracts.forEach(Contract::synchronizeOrderName);
-        }
-    }
 
     @ManyToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     @JoinTable(
