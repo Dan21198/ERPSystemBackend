@@ -24,6 +24,9 @@ public class Employee {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(unique = true)
+    private String userDefinedId;
+
     @NotBlank(message = "First name must not be blank")
     @Size(max = 50, message = "First name must not exceed 50 characters")
     private String firstName;
@@ -41,7 +44,6 @@ public class Employee {
     @NotNull(message = "Contract start date must not be null")
     private Date contractStart;
 
-    @FutureOrPresent(message = "Contract end date must be in the future or present")
     private Date contractEnd;
 
     @NotNull(message = "Workload percentage must not be null")

@@ -19,6 +19,8 @@ public class EmployeeDTO {
 
     private Long id;
 
+    private String userDefinedId;
+
     @NotBlank(message = "First name cannot be blank")
     @Size(max = 100, message = "First name must not exceed 100 characters")
     private String firstName;
@@ -36,7 +38,6 @@ public class EmployeeDTO {
     @NotNull(message = "Contract start date is required")
     private Date contractStart;
 
-    @FutureOrPresent(message = "Contract end date must be in the future or today")
     private Date contractEnd;
 
     @NotNull(message = "Workload percentage is required")
