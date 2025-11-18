@@ -19,7 +19,7 @@ public class ProjectDTO {
     private Long id;
 
     @NotBlank(message = "Project code cannot be blank")
-    @Size(max = 20, message = "Project code must not exceed 20 characters")
+    @Size(max = 50, message = "Project code must not exceed 50 characters")
     private String projectCode;
 
     @NotBlank(message = "Project name cannot be blank")
